@@ -3,7 +3,7 @@ const parse = require('csv-parse/lib/sync')
 const assert = require('assert')
 
 function main() {
-    let contents = fs.readFileSync("/home/mflerackers/Downloads/Csv Cleanliness in Thailand version 1.8_Thairath_Pra.csv", "utf8");
+    let contents = fs.readFileSync("./data/thairath.csv", "utf8");
     //console.log(contents);
     const records = parse(contents, {
         //columns: true,
