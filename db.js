@@ -1,12 +1,3 @@
-function sortMapByValue(map) {
-    let list = [];
-    for (let key in map) {
-        list.push([key, map[key]]);
-    }
-    list.sort((a,b) => b[1]-a[1]);
-    return list;
-}
-
 function clone(record) {
     return JSON.parse(JSON.stringify(record));
 }
@@ -40,25 +31,31 @@ function setObjectAtPath(record, path, value) {
     return record;
 }
 
-function sortByCount(records, fields) {
+function count(records, fields) {
     let count = {};
     if (Array.isArray(fields) && fields.length > 1) {
         for (let record of records) {
             let values = fields.map(field => getObjectAtPath(record, field));
-            count[values] = (count[values] || 0) + 1;
+            count[values] = [values, (count[values] ? count[values][1] : 0) + 1];
         }
     }
     else {
         let key = Array.isArray(fields) ? fields[0] : fields;
         for (let record of records) {
             let value = getObjectAtPath(record, key);
-            count[value] = (count[value] || 0) + 1;
+            count[value] = [value, (count[value] ? count[value][1] : 0) + 1];
         }
     }
     newRecords = [];
     for (let key in count) {
-        newRecords.push({"_id":key, "count":count[key]});
+        //newRecords.push({"_id":count[key][0], "count":count[key][1]});
+        newRecords.push([...count[key][0], count[key][1]]);
     }
+    return newRecords;
+}
+
+function sortByCount(records, fields) {
+    newRecords = count(records, fields);
     newRecords.sort((a,b) => b.count-a.count);
     return newRecords;
 }
@@ -83,6 +80,7 @@ function unwind(records, path) {
 }
 
 module.exports = {
+    count:count,
     unwind:unwind,
     sortByCount:sortByCount
 };
