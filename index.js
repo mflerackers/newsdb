@@ -1,16 +1,21 @@
 const importCsv = require('./importCsv.js');
+const importDb = require('./importDb.js');
 const db = require('./db.js');
 
-const json = importCsv("./data/merged.csv");
+const list = JSON.parse(fs.readFileSync("fileList.json", "utf8"));
+for (path of list) {
+    const json = importCsv(path);
+    importDb(json);
+}
 
-function sortMapByValue(map) {
+/*function sortMapByValue(map) {
     let list = [];
     for (let key in map) {
         list.push([key, map[key]]);
     }
     list.sort((a,b) => b[1]-a[1]);
     return list;
-}
+}*/
 
 /*let r = [
     {
@@ -42,7 +47,7 @@ console.log(r);*/
 r=db.sortByCount(r, ["bibliography.page", "categories.topics"]);
 console.log(r);*/
 
-r=db.unwind(json, "categories.topics");
+/*r=db.unwind(json, "categories.topics");
 //console.log(r);
 r=db.sortByCount(r, ["categories.place.geo", "categories.topics"]);
 r.sort((a,b) => {
@@ -53,9 +58,9 @@ r.sort((a,b) => {
 r.forEach(record => {
     record[0] = record[0].split(",")[0];
     console.log(record.join(","));
-});
+});*/
 
 /*r=db.unwind(json, "categories.happening");
 //console.log(JSON.stringify(r, null, 4));
-r=db.sortByCount(r, "categories.happening.external-factor");
+r=db.sortByCount(r, ["categories.place.geo", "categories.happening.external-factor"]);
 console.log(r);*/
