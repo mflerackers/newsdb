@@ -87,8 +87,6 @@ app.get('/list/:name/:value', function(req, res) {
 app.get('/search', function(req, res) {
     db.collection('thaidb').find({ $text: { $search: req.query.query } }, {"article.abstract":1, _id:1}).toArray((err, result) => {
         if (err) return console.log(err);
-        console.log(result)
-
         result.sort();
         res.render('index.ejs', {articles:result, attribute:req.params.name, title:req.params.name});
     });
