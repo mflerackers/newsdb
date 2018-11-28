@@ -63,7 +63,8 @@ const map = {
     geo: "$categories.place.geo",
     "external-factor": "$categories.happening.external-factor",
     density: "$categories.place.density",
-    topic: "$categories.topics"
+    topic: "$categories.topics",
+    keyword: "$article.keywords",
 };
 
 app.get('/list/:name', function(req, res) {
@@ -80,6 +81,16 @@ app.get('/list/:name/:value', function(req, res) {
     db.collection('thaidb').find({[name]: req.params.value}).toArray((err, result) => {
         if (err) return console.log(err);
         res.render('index.ejs', {articles:result, title:`${req.params.name} - ${req.params.value}`});
+    });
+})
+
+app.get('/search', function(req, res) {
+    db.collection('thaidb').find({ $text: { $search: req.query.query } }, {"article.abstract":1, _id:1}).toArray((err, result) => {
+        if (err) return console.log(err);
+        console.log(result)
+
+        result.sort();
+        res.render('index.ejs', {articles:result, attribute:req.params.name, title:req.params.name});
     });
 })
 
@@ -121,6 +132,9 @@ app.get('/group/:first/:second', function(req, res) {
     }
     if (firstGroup == "$categories.topics" || secondGroup == "$categories.topics") {
         aggregate.push({$unwind:"$categories.topics"});
+    }
+    if (firstGroup == "$article.keywords" || secondGroup == "$article.keywords") {
+        aggregate.push({$unwind:"$article.keywords"});
     }
     aggregate.push({$sortByCount:{$mergeObjects:{first:firstGroup,second:secondGroup}}});
     console.log(firstGroup, secondGroup, aggregate);
