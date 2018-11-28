@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : Geo</title>
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1>Geo</h1>
+    <div><%= articles.length %> results</div>
+    <ul class="articles">
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">
+            <a href="/geo/<%= articles[i] %>">
+            <span><%= articles[i] %></span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</body>
+</html>

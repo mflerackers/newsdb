@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : Newspapers</title>
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1>Newspapers</h1>
+    <div><%= articles.length %> results</div>
+    <ul class="articles">
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">
+            <a href="/newspaper/<%= articles[i] %>">
+            <span><%= articles[i] %></span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</body>
+</html>

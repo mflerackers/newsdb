@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : External Factors</title>
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1>External Factors</h1>
+    <div><%= articles.length %> results</div>
+    <ul class="articles" style="display: inline-block; float:left">
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">
+            <a href="/external-factor/<%= encodeURIComponent(articles[i]) %>">
+            <span><%= articles[i] %></span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+    <% if (count) { %>
+        <div><a href="/external-factor">Hide chart</a></div>
+    <% } else { %>
+        <div><a href="/external-factor?chart=true">Show chart</a></div>
+    <% } %>   
+    <div style="display: inline-block; float:left">
+        <canvas id="resultChart" width="800" height="400"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    <% if (count) { %>
+    <script>
+        const backgroundColors = [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(255, 159, 64, 0.2)",
+            "rgba(255, 205, 86, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(153, 102, 255, 0.2)",
+            "rgba(201, 203, 207, 0.2)"];
+        const borderColors = [
+            "rgb(255, 99, 132)",
+            "rgb(255, 159, 64)",
+            "rgb(255, 205, 86)",
+            "rgb(75, 192, 192)",
+            "rgb(54, 162, 235)",
+            "rgb(153, 102, 255)",
+            "rgb(201, 203, 207)"];
+        
+        datasets = [{
+            label: "Count",
+            data: <%- `[${count}]` %>, 
+            backgroundColor: backgroundColors[0],
+            borderColor: borderColors[0],
+            borderWidth: 1
+        }];
+
+        var resultChart = new Chart("resultChart", {
+            type: 'bar',
+            data: {
+                labels: <%- `[${articles.map(article => `"${article}"`).join(",")}]` %>,
+                datasets: datasets
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: "External Factors"
+                },
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+    <% } %>
+</body>
+</html>

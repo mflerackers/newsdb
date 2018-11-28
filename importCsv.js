@@ -6,10 +6,12 @@ module.exports = {};
 
 function cleanGeo(geo) {
     let index = geo.indexOf(",");
+    if (geo == "" || geo == "NA")
+        return undefined;
     if (index < 0)
-        return geo.toLowerCase();
+        return geo.toLowerCase().trim();
     else
-        return geo.substr(0, index).toLowerCase();
+        return geo.substr(0, index).toLowerCase().trim();
 }
 
 function cleanLonLat(lat, lon) {
@@ -41,7 +43,7 @@ module.exports = function(path) {
         "relevance":                    record[1],
         "bibliography": {           
             "headline":                 record[2],
-            "newspaper":                record[3],
+            "newspaper":                record[3].toLowerCase(),
             "date":                     record[4],
             "publication":              record[5],
             "page":                     record[6],
@@ -96,7 +98,7 @@ module.exports = function(path) {
                         "period":       record[42]
                     }
                 }
-            ], 
+            ].filter(happening => happening.name != "NA"),
             "people":[                  // record[43],
                 {
                     "name":             record[44],
@@ -157,7 +159,7 @@ module.exports = function(path) {
                 {
                     "name":             record[89]
                 }
-            ],
+            ].filter(organization => organization != "NA"),
             "product": {                // record[90],
                 "kind":                 record[91],
                 "hygiene": {

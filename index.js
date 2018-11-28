@@ -1,6 +1,6 @@
 const importCsv = require('./importCsv.js');
 const importDb = require('./importDb.js');
-const db = require('./db.js');
+const fs = require('fs');
 
 const list = JSON.parse(fs.readFileSync("fileList.json", "utf8"));
 for (path of list) {
