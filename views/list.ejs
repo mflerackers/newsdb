@@ -11,7 +11,7 @@
     <ul class="articles">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/list/<%- attribute %>/<%= articles[i] %>">
+            <a href="/list/<%- attribute %>/<%= encodeURIComponent(articles[i]) %>">
             <span><%= articles[i] %></span>
             </a>
         </li>
