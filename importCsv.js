@@ -1,17 +1,60 @@
 const fs = require('fs');
-const parse = require('csv-parse/lib/sync')
-const assert = require('assert')
+const parse = require('csv-parse/lib/sync');
+const assert = require('assert');
+const provinces = require('./provinces');
+const districts = require('./districts');
 
 module.exports = {};
 
 function cleanGeo(geo) {
-    let index = geo.indexOf(",");
-    if (geo == "" || geo == "NA")
+    if (geo == "" || geo == "NA") {
         return undefined;
-    if (index < 0)
-        return geo.toLowerCase().trim();
-    else
-        return geo.substr(0, index).toLowerCase().trim();
+    }
+    // Split on comma
+    let parts = geo.split(",");
+    // Make all parts lowercase, remove whitespace and remove all empty strings
+    parts = parts.map(part => part.toLowerCase().trim()).filter(part => part.length > 0);
+    if (parts.length == 0) {
+        return undefined;
+    }
+    if (parts.length == 1) {
+        return parts[0];
+    }
+    else {
+        geo = {};
+
+        parts.forEach((part, i) => {
+            if (part.includes("province")) {
+                geo.province = part.replace(/(\s*province\s*)/, "");
+            }
+            else if (part.includes("district")) {
+                geo.district = part.replace(/(\s*district\s*)/, "");
+            } else {
+                if (i == 0) {
+                    geo.city = part;
+                }
+                else {
+                    if (!geo.province && provinces.includes(part)) {
+                        geo.province = part;
+                    }
+                    else {
+                        geo.country = part;
+                    }
+                }
+            }
+        });
+
+        if (geo.province && !provinces.includes(geo.province)) {
+            console.error("unknown province " + geo.province);
+        }
+        if (geo.district && !(districts.includes(geo.district) || districts.includes(geo.district + " " + geo.province))) {
+            console.error("unknown district " + geo.district);
+        }
+
+        console.log(geo);
+
+        return parts[0];
+    }
 }
 
 function cleanLonLat(lat, lon) {
