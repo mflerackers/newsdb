@@ -17,32 +17,39 @@ function cleanGeo(geo) {
     if (parts.length == 0) {
         return undefined;
     }
-    if (parts.length == 1) {
+    /*if (parts.length == 1) {
         return parts[0];
     }
-    else {
-        geo = {};
+    else*/ {
+        geo = {original:geo};
 
         parts.forEach((part, i) => {
+
+            if (part == "bankok")
+                part = "bangkok";
+
             if (part.includes("province")) {
                 geo.province = part.replace(/(\s*province\s*)/, "");
             }
             else if (part.includes("district")) {
                 geo.district = part.replace(/(\s*district\s*)/, "");
             } else {
-                if (i == 0) {
+                /*if (i == 0) {
                     geo.city = part;
                 }
-                else {
+                else {*/
                     if (!geo.province && provinces.includes(part)) {
                         geo.province = part;
                     }
                     else {
                         geo.country = part;
                     }
-                }
+                //}
             }
         });
+
+        if (!geo.country && (geo.province || geo.district))
+            geo.country = "thailand";
 
         if (geo.province && !provinces.includes(geo.province)) {
             console.error("unknown province " + geo.province);
@@ -53,7 +60,9 @@ function cleanGeo(geo) {
 
         console.log(geo);
 
-        return parts[0];
+        let geoString = [geo.country,geo.province,geo.district,geo.city].join(",");
+
+        return geoString;
     }
 }
 

@@ -1,7 +1,7 @@
 const provinces = [
     "amnat charoen",
     "ang thong",
-    "bankok",
+    "bangkok",
     "bueng kan",
     "buriram",
     "chachoengsao",
