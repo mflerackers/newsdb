@@ -140,37 +140,44 @@ app.get('/group/:first/:second', function(req, res) {
     db.collection('thaidb').aggregate(aggregate).toArray((err, result) => {
         if (err) return console.log(err)
         result = result.filter(article => article._id.first && article._id.first != "" && article._id.second && article._id.second != "");
-        let articles = result.map(article => [article._id.first, article._id.second, article.count].join(","));
-        let count = req.query.chart ? result.map(article => article.count) : false;
 
-        let labels = [];
-        let categories = [];
-        console.log(result.slice(0, 10))
-        result.some(r => {
-            label = r._id.first;
-            if (labels.findIndex(l => l == label) == -1)
-                labels.push(label);
-            return labels.length >= 10;
-        });
-        result.forEach(r => {
-            category = r._id.second;
-            if (categories.findIndex(c => c == category) == -1)
-                categories.push(category);
-        });
-        let datasets = categories.map(_ => [...labels.map(_ => 0)]);
-        let first, second, labelIndex, categoryIndex;
-        result.forEach(r => {
-            first = r._id.first;
-            second = r._id.second;
-            labelIndex = labels.findIndex(l => l == first);
-            categoryIndex = categories.findIndex(c => c == second);
-            if (labelIndex > -1 && categoryIndex > -1) {
-                datasets[categoryIndex][labelIndex] = r.count;
+        if (req.query.csv) {
+            let articles = result.map(article => `"${article._id.first}", "${article._id.second}", "${article.count}"`);
+            res.attachment(`${req.params.first}-${req.params.second}.csv`);
+            res.status(200).send(articles.join("\n"));
+        }
+        else {
+            let articles = result.map(article => [article._id.first, article._id.second, article.count].join(","));
+            let count = req.query.chart ? result.map(article => article.count) : false;
+            let labels = [];
+            let categories = [];
+            console.log(result.slice(0, 10))
+            result.some(r => {
+                label = r._id.first;
+                if (labels.findIndex(l => l == label) == -1)
+                    labels.push(label);
+                return labels.length >= 10;
+            });
+            result.forEach(r => {
+                category = r._id.second;
+                if (categories.findIndex(c => c == category) == -1)
+                    categories.push(category);
+            });
+            let datasets = categories.map(_ => [...labels.map(_ => 0)]);
+            let first, second, labelIndex, categoryIndex;
+            result.forEach(r => {
+                first = r._id.first;
+                second = r._id.second;
+                labelIndex = labels.findIndex(l => l == first);
+                categoryIndex = categories.findIndex(c => c == second);
+                if (labelIndex > -1 && categoryIndex > -1) {
+                    datasets[categoryIndex][labelIndex] = r.count;
+                }
+            });
+            console.log(labels, categories, datasets);
+
+            res.render('group.ejs', {articles:articles, count:count, first:req.params.first, second:req.params.second, 
+                labels:labels, categories:categories, datasets:datasets});
             }
-        });
-        console.log(labels, categories, datasets);
-
-        res.render('group.ejs', {articles:articles, count:count, first:req.params.first, second:req.params.second, 
-            labels:labels, categories:categories, datasets:datasets});
     });
 })
