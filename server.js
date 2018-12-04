@@ -66,6 +66,7 @@ const map = {
     density: "$categories.place.density",
     topic: "$categories.topics",
     keyword: "$article.keywords",
+    product: "$categories.product.kind",
 };
 
 app.get('/list/:name', function(req, res) {
