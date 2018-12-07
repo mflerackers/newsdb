@@ -12,18 +12,18 @@
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/external-factor/<%= encodeURIComponent(articles[i]) %>">
-            <span><%= articles[i] %></span>
+            <a href=<%- `"/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>">
+            <span><%= [articles[i].first, articles[i].second, articles[i].count].join(",") %></span>
             </a>
         </li>
         <% } %>
     </ul>
     <% if (count) { %>
-        <div><a href=<%- `"/group/${first}/${second}"`%>>Hide chart</a></div>
+        <div><a href=<%- `"/group/${first}/${second}"` %>>Hide chart</a></div>
     <% } else { %>
-        <div><a href=<%-`"/group/${first}/${second}?chart=true"`%>>Show chart</a></div>
+        <div><a href=<%-`"/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
     <% } %>
-    <div><a href=<%-`"/group/${first}/${second}?csv=true"`%>>CSV</a></div>
+    <div><a href=<%-`"/group/${first}/${second}?csv=true"` %>>CSV</a></div>
     <div style="display: inline-block; float:left">
         <canvas id="resultChart" width="800" height="400"></canvas>
     </div>

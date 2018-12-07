@@ -148,7 +148,7 @@ app.get('/group/:first/:second', function(req, res) {
             res.status(200).send(articles.join("\n"));
         }
         else {
-            let articles = result.map(article => [article._id.first, article._id.second, article.count].join(","));
+            let articles = result.map(article => ({first:article._id.first, second:article._id.second, count:article.count}));
             let count = req.query.chart ? result.map(article => article.count) : false;
             let labels = [];
             let categories = [];
@@ -175,10 +175,19 @@ app.get('/group/:first/:second', function(req, res) {
                     datasets[categoryIndex][labelIndex] = r.count;
                 }
             });
-            console.log(labels, categories, datasets);
+            console.log(articles, labels, categories, datasets);
 
             res.render('group.ejs', {articles:articles, count:count, first:req.params.first, second:req.params.second, 
                 labels:labels, categories:categories, datasets:datasets});
             }
     });
 })
+
+app.get('/group/:first/:second/:valueFirst/:valueSecond', function(req, res) {
+    let nameFirst = map[req.params.first].slice(1);
+    let nameSecond = map[req.params.second].slice(1);
+    db.collection('thaidb').find({[nameFirst]: req.params.valueFirst, [nameSecond]: req.params.valueSecond}).toArray((err, result) => {
+        if (err) return console.log(err);
+        res.render('index.ejs', {articles:result, title:`${req.params.first}:${req.params.valueFirst} - ${req.params.second}:${req.params.valueSecond}`});
+    });
+});
