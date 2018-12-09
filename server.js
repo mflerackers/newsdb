@@ -242,7 +242,7 @@ app.get('/map/:param/:value', function(req, res) {
             data[province] = (data[province] || 0) + record.count;
         });
         data = Object.entries(data).map(([province, count]) => ({name:province, count:count}));
-        res.render('map.ejs', {articles:data, attribute:req.params.param, value:req.params.value , title:`${req.params.param}=${req.params.value}`});
+        res.render('map.ejs', {articles:data, attribute:req.params.param, value:req.params.value , title:`Map where ${req.params.param} is ${req.params.value}`});
         //res.status(200).send(result);
     });
 });
