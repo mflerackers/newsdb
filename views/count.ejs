@@ -2,27 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ThaiDB : External Factors</title>
+    <title>ThaiDB : <%- title %></title>
     <link rel="stylesheet" type="text/css" href="/style.css">
 </head>
 <body>
     <%- include('header'); -%>
-    <h1>External Factors</h1>
+    <h1><%- title %></h1>
     <div><%= articles.length %> results</div>
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/list/external-factor/<%= encodeURIComponent(articles[i].name) %>">
+            <a href="/list/<%- attribute %>/<%= encodeURIComponent(articles[i].name) %>">
             <span><%= articles[i].name %>,<%= articles[i].count %></span>
             </a>
         </li>
         <% } %>
-    </ul>
-    <% if (count) { %>
-        <div><a href="/external-factor">Hide chart</a></div>
-    <% } else { %>
-        <div><a href="/external-factor?chart=true">Show chart</a></div>
-    <% } %>   
+    </ul>  
     <div style="display: inline-block; float:left">
         <canvas id="resultChart" width="800" height="400"></canvas>
     </div>

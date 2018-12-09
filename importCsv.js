@@ -212,7 +212,7 @@ module.exports = function(path) {
                     "name":             record[89]
                 }
             ].filter(organization => organization != "NA"),
-            "product": {                // record[90],
+            "product": record[91] != "NA" ? {                // record[90],
                 "kind":                 record[91],
                 "hygiene": {
                     "head":             record[92],
@@ -228,7 +228,7 @@ module.exports = function(path) {
                 "service-specific":     record[99],
                 "target-gender":        record[100],
                 "target-age":           record[101]
-            },
+            } : undefined,
             "topics": [
                 record[102], 
                 record[103], 
