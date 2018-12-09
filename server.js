@@ -39,13 +39,14 @@ const map = {
     topic: "$categories.topics",
     keyword: "$article.keywords",
     product: "$categories.product.kind",
+    province: "$categories.place.province",
 };
 
 app.get('/list/:name', function(req, res) {
     let name = map[req.params.name].slice(1);
     db.collection('thaidb').distinct(name, (err, result) => {
         if (err) return console.log(err);
-        result = result.filter(article => article._id != "");
+        result = result.filter(article => article && article._id != "");
         result.sort();
         res.render('list.ejs', {articles:result, attribute:req.params.name, title:`Distinct ${req.params.name}`});
     });

@@ -66,6 +66,66 @@ function cleanGeo(geo) {
     }
 }
 
+function cleanProvince(geo) {
+    if (geo == "" || geo == "NA") {
+        return undefined;
+    }
+    // Split on comma
+    let parts = geo.split(",");
+    // Make all parts lowercase, remove whitespace and remove all empty strings
+    parts = parts.map(part => part.toLowerCase().trim()).filter(part => part.length > 0);
+    if (parts.length == 0) {
+        return undefined;
+    }
+    /*if (parts.length == 1) {
+        return parts[0];
+    }
+    else*/ {
+        geo = {original:geo};
+
+        parts.forEach((part, i) => {
+
+            if (part == "bankok")
+                part = "bangkok";
+
+            if (part.includes("province")) {
+                geo.province = part.replace(/(\s*province\s*)/, "");
+            }
+            else if (part.includes("district")) {
+                geo.district = part.replace(/(\s*district\s*)/, "");
+            } else {
+                /*if (i == 0) {
+                    geo.city = part;
+                }
+                else {*/
+                    if (!geo.province && provinces.includes(part)) {
+                        geo.province = part;
+                    }
+                    else {
+                        geo.country = part;
+                    }
+                //}
+            }
+        });
+
+        if (!geo.country && (geo.province || geo.district))
+            geo.country = "thailand";
+
+        if (geo.province && !provinces.includes(geo.province)) {
+            console.error("unknown province " + geo.province);
+        }
+        if (geo.district && !(districts.includes(geo.district) || districts.includes(geo.district + " " + geo.province))) {
+            console.error("unknown district " + geo.district);
+        }
+
+        console.log(geo);
+
+        let geoString = [geo.country,geo.province,geo.district,geo.city].join(",");
+
+        return geo.province;
+    }
+}
+
 function cleanLonLat(lat, lon) {
     if (lon == "NA" || lat == "NA")
         return null;
@@ -116,6 +176,7 @@ module.exports = function(path) {
             },          
             "place": {          
                 "geo":                  cleanGeo(record[16]),
+                "province":             cleanProvince(record[16]),
                 "longitude":            record[17],
                 "latitude" :            record[18],
                 "type":                 record[19],
