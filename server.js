@@ -54,8 +54,22 @@ app.get('/list/:name', function(req, res) {
 
 app.get('/list/:name/:value', function(req, res) {
     let name = map[req.params.name].slice(1);
-    db.collection('thaidb').find({[name]: req.params.value}).toArray((err, result) => {
+    let aggregate = [];
+    if (name.startsWith("categories.happening")) {
+        aggregate.push({$unwind:"$categories.happening"});
+    }
+    if (name == "categories.topics") {
+        aggregate.push({$unwind:"$categories.topics"});
+    }
+    if (name == "article.keywords") {
+        aggregate.push({$unwind:"$article.keywords"});
+    }
+    aggregate.push({$match:{[name]: req.params.value}});
+    console.log(name, req.params.value, aggregate);
+    db.collection('thaidb').aggregate(aggregate).toArray((err, result) => {
+    //db.collection('thaidb').find({[name]: req.params.value}).toArray((err, result) => {
         if (err) return console.log(err);
+        result = result.filter(article => article && article._id != "");
         res.render('index.ejs', {articles:result, title:`${req.params.name} - ${req.params.value}`});
     });
 })
