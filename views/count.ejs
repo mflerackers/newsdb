@@ -8,7 +8,7 @@
 <body>
     <%- include('header'); -%>
     <h1><%- title %></h1>
-    <div><%= articles.length %> results</div>
+    <div><%= articles.length %> results | mean: <%= statistics.mean %> | stdev: <%= statistics.stdev %> | confidence interval: [<%= statistics.mean-statistics.confidence %>, <%= statistics.mean+statistics.confidence %>]</div>
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">

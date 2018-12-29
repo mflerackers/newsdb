@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser= require('body-parser')
 const mongodb = require('mongodb');
 const app = express();
+const stats = require("./stats")
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -101,7 +102,9 @@ app.get('/count/:name', function(req, res) {
         result = result.filter(article => article._id && article._id != "");
         let articles = result.map(article => ({name:article._id, count:article.count}));
         let count = result.map(article => article.count);
-        res.render('count.ejs', {articles:articles, count:count, attribute:req.params.name, title:`Count by ${req.params.name}`});
+        let statistics = { stdev: stats.stdevp(count), mean: stats.meanp(count), confidence:stats.confidence(0.05, stats.stdevp(count), count.length) };
+        console.log(statistics);
+        res.render('count.ejs', {articles:articles, count:count, attribute:req.params.name, title:`Count by ${req.params.name}`, statistics:statistics});
     });
 })
 
@@ -199,35 +202,46 @@ app.get('/correlation/:group/:first/:second', function(req, res) {
         if (err) return console.log(err);
         result = result[0];
         let data = {};
+        let count = 0;
+        let series = {};
         [req.params.first, req.params.second].forEach(param => {
-            let count = {}
+            let params = {};
+            data[param] = params;
             result[param].forEach(record => {
-                if (data[record._id.group]) {
-                    if (data[record._id.group][param]) {
-                        data[record._id.group][param][record._id.param] = record.count;
-                    }
-                    else {
-                        data[record._id.group][param] = {
-                            [record._id.param]: record.count
-                        }
-                    }
+                let index = series[record._id.group];
+                if (index == undefined) {
+                    index = count++;
+                    series[record._id.group] = index;
                 }
-                else {
-                    data[record._id.group] = {
-                        [param]:{
-                            [record._id.param]: record.count
-                        }
-                    };
+                let array = params[record._id.param];
+                if (!array) {
+                    array = [];
+                    params[record._id.param] = array;
                 }
-                count[record._id.group] = (count[record._id.group] || 0) + record.count;
-            });
-            Object.entries(data).forEach(([group, map]) => {
-                let sum = count[group];
-                Object.entries(map[param]).forEach(([key, count]) => {
-                    map[param][key] = count / sum;
-                });
+                array[index] = record.count;
             });
         });
+        seriesArray = [];
+        Object.entries(series).forEach(([name, index]) => seriesArray[index] = name);
+        [req.params.first, req.params.second].forEach(param => {
+            Object.values(data[param]).forEach(array => {
+                for (let i = 0; i < seriesArray.length; i++) {
+                    array[i] = array[i] || 0;
+                }
+                let total = array.reduce((v,a) => v+a);
+                for (let i = 0; i < seriesArray.length; i++) {
+                    array[i] = array[i] / total;
+                }
+            });
+        });
+        data.series = seriesArray;
+        correlation = {};
+        Object.entries(data[req.params.first]).forEach(([nameX, arrayX]) => {
+            Object.entries(data[req.params.second]).forEach(([nameY, arrayY]) => {
+                correlation[`${req.params.first}-${nameX}-${req.params.second}-${nameY}`] = stats.covarp(arrayX, arrayY);
+            });
+        });
+        data.correlation = correlation;
         res.status(200).send(data);
         //res.render('index.ejs', {articles:result, title:`${req.params.first}:${req.params.valueFirst} - ${req.params.second}:${req.params.valueSecond}`});
     });

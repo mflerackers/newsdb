@@ -294,7 +294,9 @@ module.exports = function(path) {
                 record[102], 
                 record[103], 
                 record[104]
-            ].filter(topic => topic != "NA" && topic != "")
+            ].filter(topic => topic != "NA" && topic != "").filter((topic, index, self) => {
+                return self.indexOf(topic) == index;
+            })
         },
         "comments":                     record[105],
         "article": {            
