@@ -261,7 +261,7 @@ module.exports = function(path) {
                     "role":             record[84],
                     "action":           record[85]
                 }
-            ],
+            ].filter(p => p.name != "NA" || p.gender != "NA"),
             "organizations":[           // record[86],
                 {
                     "name":             record[87]

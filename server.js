@@ -41,6 +41,9 @@ const map = {
     keyword: "$article.keywords",
     product: "$categories.product.kind",
     province: "$categories.place.province",
+    gender: "$categories.people.gender",
+    education: "$categories.people.education-level",
+    age: "$categories.people.age"
 };
 
 app.get('/list/:name', function(req, res) {
@@ -95,6 +98,9 @@ app.get('/count/:name', function(req, res) {
     if (group == "$article.keywords") {
         aggregate.push({$unwind:"$article.keywords"});
     }
+    if (group.startsWith("$categories.people")) {
+        aggregate.push({$unwind:"$categories.people"});
+    }
     aggregate.push({$sortByCount:group});
     console.log(group, aggregate);
     db.collection('thaidb').aggregate(aggregate).toArray((err, result) => {
@@ -120,6 +126,9 @@ app.get('/group/:first/:second', function(req, res) {
     }
     if ([firstGroup, secondGroup].some(name => name.startsWith("$article.keywords"))) {
         aggregate.push({$unwind:"$article.keywords"});
+    }
+    if ([firstGroup, secondGroup].some(name => name.startsWith("$categories.people"))) {
+        aggregate.push({$unwind:"$categories.people"});
     }
     aggregate.push({$sortByCount:{$mergeObjects:{first:firstGroup,second:secondGroup}}});
     console.log(firstGroup, secondGroup, aggregate);
