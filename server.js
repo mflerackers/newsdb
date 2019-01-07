@@ -43,11 +43,12 @@ const map = {
     province: "$categories.place.province",
     gender: "$categories.people.gender",
     education: "$categories.people.education-level",
-    age: "$categories.people.age"
+    age: "$categories.people.age",
+    work: "$categories.people.work-specific",
 };
 
 app.get('/list/:name', function(req, res) {
-    let name = map[req.params.name].slice(1);
+    let name = (map[req.params.name] || req.params.name).slice(1);
     db.collection('thaidb').distinct(name, (err, result) => {
         if (err) return console.log(err);
         result = result.filter(article => article && article._id != "");
@@ -57,7 +58,7 @@ app.get('/list/:name', function(req, res) {
 })
 
 app.get('/list/:name/:value', function(req, res) {
-    let name = map[req.params.name].slice(1);
+    let name = (map[req.params.name] || req.params.name).slice(1);
     let aggregate = [];
     if (name.startsWith("categories.happening")) {
         aggregate.push({$unwind:"$categories.happening"});
@@ -87,7 +88,7 @@ app.get('/search', function(req, res) {
 })
 
 app.get('/count/:name', function(req, res) {
-    let group = map[req.params.name];
+    let group = (map[req.params.name] || req.params.name);
     let aggregate = [];
     if (group.startsWith("$categories.happening")) {
         aggregate.push({$unwind:"$categories.happening"});
@@ -115,8 +116,8 @@ app.get('/count/:name', function(req, res) {
 })
 
 app.get('/group/:first/:second', function(req, res) {
-    let firstGroup = map[req.params.first];
-    let secondGroup = map[req.params.second];
+    let firstGroup = (map[req.params.first] || req.params.first);
+    let secondGroup = (map[req.params.second] || req.params.second);
     let aggregate = [];
     if ([firstGroup, secondGroup].some(name => name.startsWith("$categories.happening"))) {
         aggregate.push({$unwind:"$categories.happening"});
@@ -257,7 +258,7 @@ app.get('/correlation/:group/:first/:second', function(req, res) {
 });
 
 app.get('/map/:param/:value', function(req, res) {
-    let group = map[req.params.param];
+    let group = (map[req.params.param] || req.params.param);
     let aggregate = [];
     if ([group].some(name => name.startsWith("$categories.happening"))) {
         aggregate.push({$unwind:"$categories.happening"});

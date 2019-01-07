@@ -221,12 +221,12 @@ module.exports = function(path) {
                     "work-type":        record[48],
                     "education-level":  record[49],
                     "field":            record[50],
-                    "work-specific":    record[51],
+                    "work-specific":    record[51].trim().toLowerCase(),
                     "organization":     record[52],
                     "gender":           record[53],
                     "age":              record[54],
                     "age-specific":     record[55],
-                    "role":             record[56],
+                    "role":             record[56].trim().toLowerCase(),
                     "action":           record[57]
                 },
                 {
@@ -237,12 +237,12 @@ module.exports = function(path) {
                     "work-type":        record[62],
                     "education-level":  record[63],
                     "field":            record[64],
-                    "work-specific":    record[65],
+                    "work-specific":    record[65].trim().toLowerCase(),
                     "organization":     record[66],
                     "gender":           record[67],
                     "age":              record[68],
                     "age-specific":     record[69],
-                    "role":             record[70],
+                    "role":             record[70].trim().toLowerCase(),
                     "action":           record[71]  
                 },
                 {
@@ -253,12 +253,12 @@ module.exports = function(path) {
                     "work-type":        record[76],
                     "education-level":  record[77],
                     "field":            record[78],
-                    "work-specific":    record[79],
+                    "work-specific":    record[79].trim().toLowerCase(),
                     "organization":     record[80],
                     "gender":           record[81],
                     "age":              record[82],
                     "age-specific":     record[83],
-                    "role":             record[84],
+                    "role":             record[84].trim().toLowerCase(),
                     "action":           record[85]
                 }
             ].filter(p => p.name != "NA" || p.gender != "NA"),
