@@ -10,7 +10,11 @@ app.use(express.static('resources'))
 
 var db
 
-mongodb.connect('mongodb://localhost:27017', (err, client) => {
+mongodb.connect('mongodb://localhost:27017', { 
+    useNewUrlParser: true,
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 1000 
+  }, (err, client) => {
   if (err) return console.log(err)
   db = client.db('thaidb')
   app.listen(3000, () => {

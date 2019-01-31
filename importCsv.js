@@ -303,7 +303,8 @@ module.exports = function(path) {
             "text":                     record[106],
             "abstract":                 record[107],
             "keywords":                 record[108].split(",").map(keyword => keyword.trim().toLowerCase())
-        }
+        },
+        "newCategory":                  record[109]
     }});
 
     //console.log(JSON.stringify(json, null, 4));
