@@ -272,7 +272,7 @@ module.exports = function(path) {
                 {
                     "name":             record[89]
                 }
-            ].filter(organization => organization != "NA"),
+            ].filter(organization => organization.name != "NA"),
             "product": record[91] != "NA" ? {                // record[90],
                 "kind":                 record[91],
                 "hygiene": {
