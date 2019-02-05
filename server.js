@@ -175,6 +175,12 @@ app.get('/group/:first/:second', function(req, res) {
                     datasets[categoryIndex][labelIndex] = r.count;
                 }
             });
+            if (req.query.percentage) {
+                labels.forEach((_, l) => {
+                    let sum = categories.reduce((a, _, c) => a + datasets[c][l], 0);
+                    categories.forEach((_, c) => datasets[c][l] /= sum);
+                });
+            }
             console.log(articles, labels, categories, datasets);
 
             res.render('group.ejs', {articles:articles, count:count, first:req.params.first, second:req.params.second, 
