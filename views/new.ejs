@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : new</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <style>
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        fieldset ul li {
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        textarea {
+            vertical-align: top;
+        }
+        label {
+            flex: 1 0 100px;
+            max-width: 140px;
+            margin-right: 10px;
+            text-align: right;
+        }
+        label + * {
+            flex: 1 0 220px;
+            --max-width: 400px;
+        }
+        button {
+            padding:0.2em 0.8em;
+            border:0.1em solid darkblue;
+            margin:0.2em;
+            border-radius:0.12em;
+            box-sizing: border-box;
+            text-decoration:none;
+            color:#FFFFFF;
+            background-color:#4eb5f1;
+            border-radius:0.2em;
+        }
+        button:hover {
+            color:#000000;
+            background-color:lightskyblue;
+        }
+        button:disabled {
+            background-color:silver;
+        }
+        button.delete {
+            background-color:lightcoral;
+        }
+        button:hover.delete {
+            background-color:lightpink;
+        }
+    </style>
+</head>
+<body>
+    <%- include('header'); -%>
+    <script>
+    function addText(parent, labelText, name, value) {
+        let li = document.createElement("li");
+        let label = document.createElement("label");
+        label.setAttribute("for", name);
+        label.innerText = labelText;
+        li.appendChild(label);
+        let control = document.createElement("input");
+        control.setAttribute("type", "text");
+        control.setAttribute("name", name);
+        control.value = value || "";
+        li.appendChild(control);
+        parent.appendChild(li);
+        return li;
+    }
+    function addSelect(parent, labelText, name, options, value) {
+        li = document.createElement("li");
+        if (labelText) {
+            label = document.createElement("label");
+            label.setAttribute("for", name);
+            label.innerText = labelText;
+            li.appendChild(label);
+        }
+        control = document.createElement("select");
+        control.setAttribute("name", name);
+        options.forEach(o=>{
+            let option = document.createElement("option");
+            option.value = o;
+            option.text = o;
+            control.appendChild(option);
+        });
+        if (value) {
+            control.selectedIndex = Array.prototype.findIndex.call(control.options, o=>o.value==value);
+        }
+        li.appendChild(control);
+        parent.appendChild(li);
+        return li;
+    }
+    function setEditValue(name, value) {
+        let edit = document.getElementById(name);
+        if (!edit)
+            return;
+        edit.value = value || "";
+    }
+    function setSelectValue(name, value) {
+        let select = document.getElementById(name);
+        if (!select)
+            return;
+        select.selectedIndex = Array.prototype.findIndex.call(select.options, o=>o.value==value);
+    }
+    </script>
+    <script>
+        var data = <%-JSON.stringify(data)%>;
+    </script>
+    <div class="container">
+    <fieldset style="margin-top: 20px;"><legend>General</legend>
+    <ul>
+        <li><label for="id">Id</label> <input name="id" id="root.id"/></li>
+        <li><label for="relevance">Relevance</label> 
+            <select name="relevance" id="root.relevance">
+                <option>beauty/cleanliness</option>
+                <option>other articles</option>
+            </select>
+        </li>
+    </ul>
+    </fieldset>
+    <script>
+        setEditValue("root.id", data.id);
+        setSelectValue("root.relevance", data.relevance);
+    </script>
+    <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
+    <ul>
+        <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
+        <li><label for="newspaper">Newspaper</label> <input name="newspaper" id="root.bibliography.newspaper"/></li>
+        <li><label for="date">Date</label> <input name="date" id="root.bibliography.date"/></li>
+        <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication"/></li>
+        <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
+        <li><label for="location">Location</label> 
+            <select name="location" id="root.bibliography.location">
+                <option>Full page</option>
+                <option>Lower left</option>
+                <option>Lower right</option>
+                <option>Lower-half</option>
+                <option>Middle of the page</option>
+                <option>Upper left</option>
+                <option>Upper right</option>
+                <option>Upper-half</option>
+            </select>
+        </li>
+        <fieldset style="margin-top: 20px;"><legend>Size</legend>
+        <ul>
+            <li><label for="size-headline">Headline</label>
+                <select name="size-headline" id="root.bibliography.size.headline">
+                    <option>Large</option>
+                    <option>Medium</option>
+                    <option>Small</option>
+                </select>
+            </li>
+            <li><label for="size-colinch">Col-inch</label> <input name="size-colinch" id="root.bibliography.size.col-inch"/></li>
+            <li><label for="size-article">Article</label>
+                <select name="size-article" id="root.bibliography.size.article">
+                    <option></option>
+                    <option>Full page</option>
+                    <option>Half of the page</option>
+                    <option>Less than a quarter of the page</option>
+                    <option>More than half of the page</option>
+                    <option>Quarter of the page</option>
+                </select>
+            </li>
+        </ul>
+        </fieldset>
+        <li><label for="file">File</label> <input name="file" id="root.bibliography.file"/></li>
+        <li><label for="photo">Photo</label>
+            <select name="photo" id="root.bibliography.photo">
+                <option>yes</option>
+                <option>no</option>
+            </select>
+        </li>
+        <li><label for="type">Type</label> 
+            <select name="type" id="root.bibliography.type">
+                <option>Advertisement</option>
+                <option>Editorial</option>
+                <option>Interview</option>
+                <option>Letters</option>
+                <option>News article</option>
+                <option>Opinion piece</option>
+            </select>
+        </li>
+    </ul>
+    </fieldset>
+    <script>
+            setEditValue("root.bibliography.headline", data.bibliography.headline);
+            setEditValue("root.bibliography.newspaper", data.bibliography.newspaper);
+            setEditValue("root.bibliography.date", data.bibliography.date);
+            setEditValue("root.bibliography.publication", data.bibliography.publication);
+            setEditValue("root.bibliography.page", data.bibliography.page);
+            setSelectValue("root.bibliography.location", data.bibliography.location);
+            setSelectValue("root.bibliography.size.headline", data.bibliography.size.headline);
+            setEditValue("root.bibliography.size.col-inch", data.bibliography.size["col-inch"]);
+            setSelectValue("root.bibliography.size.article", data.bibliography.size.article);
+            setEditValue("root.bibliography.file", data.bibliography.file);
+            setSelectValue("root.bibliography.photo", data.bibliography.photo);
+            setSelectValue("root.bibliography.type", data.bibliography.type);
+        </script>
+    <fieldset style="margin-top: 20px;"><legend>Categories</legend>
+    <ul>
+        <fieldset style="margin-top: 20px;"><legend>Focus</legend>
+            <ul>
+                <li><label for="focus-topic">Topic</label> 
+                    <select name="focus-topic" id="root.categories.focus.topic">
+                        <option>Event/Happening</option>
+                        <option>People</option>
+                        <option>Product (service)</option>
+                    </select>
+                </li>
+                <li><label for="focus-level">Level</label> 
+                    <select name="focus-level" id="root.categories.focus.level">
+                        <option></option>        
+                        <option>ASEAN</option>
+                        <option>Event/Happening</option>
+                        <option>International</option>
+                        <option>Local</option>
+                        <option>National</option>
+                    </select>
+                </li>
+            </ul>
+        </fieldset>
+        <script>
+            setSelectValue("root.categories.focus.topic", data.categories.focus.topic);
+            setSelectValue("root.categories.focus.level", data.categories.focus.level);
+        </script>
+        <fieldset style="margin-top: 20px;"><legend>Place</legend>
+            <ul>
+                <li><label for="place-geo">Geo</label> <input name="place-geo" id="root.categories.place.geo"/></li>
+                <li><label for="place-longitude">Longitude</label> <input name="place-longitude" id="root.categories.place.longitude"/></li>
+                <li><label for="place-latitude">Latitude</label> <input name="place-latitude" id="root.categories.place.latitude"/></li>
+                <li><label for="place-type">Type</label> <select name="place-type" id="root.categories.place.type">
+                        <option></option>
+                        <option>Indoor</option>
+                        <option>Indoor/Outdoor</option>
+                        <option>Outdoor</option>
+                    </select>
+                </li>
+                <li><label for="place-space">Space</label>
+                    <select name="place-space" id="root.categories.place.space">
+                        <option></option>
+                        <option>Private</option>
+                        <option>Public</option>
+                    </select>
+                </li>
+                <li><label for="place-density">Density</label>
+                    <select name="place-density" id="root.categories.place.density">
+                        <option></option>
+                        <option>Central area</option>
+                        <option>Country side</option>
+                        <option>Suburbs area</option>
+                    </select>
+                </li>
+                <li><label for="place-specific">Specific</label> <input name="place-specific" id="root.categories.place.specific"/></li>
+            </ul>
+        </fieldset>
+        <script>
+                setEditValue("root.categories.place.geo", data.categories.place.geo);
+                setEditValue("root.categories.place.longitude", data.categories.place.longitude);
+                setEditValue("root.categories.place.latitude", data.categories.place.latitude);
+                setSelectValue("root.categories.place.type", data.categories.place.type);
+                setSelectValue("root.categories.place.space", data.categories.place.space);
+                setSelectValue("root.categories.place.density", data.categories.place.density);
+                setEditValue("root.categories.place.specific", data.categories.place.specific);
+            </script>
+        <fieldset style="margin-top: 20px;"><legend>Happening <button id="add-happening">+</button></legend>
+            <ul id="happenings">
+            </ul>
+            <script>
+                function appendHappening(happening) {
+                    let happenings = document.getElementById("happenings");
+                    let group = document.createElement("fieldset");
+                    let legend = document.createElement("legend");
+                    let button = document.createElement("button");
+                    button.classList.add("delete");
+                    button.innerHTML = "&times;";
+                    button.addEventListener("click", ()=>{
+                        happenings.removeChild(group);
+                    });
+                    legend.appendChild(button);
+                    group.appendChild(legend);
+                    addText(group, "Name", "happening-name", happening ? happening.name : "");
+                    addSelect(group, "External factor", "organization-external-factor", [
+                        "",
+                        "Culture/Education",
+                        "Disaster",
+                        "Economy",
+                        "Epidemy",
+                        "Geographical area",
+                        "Government",
+                        "Infrastructure",
+                        "Legal factors",
+                        "Politics",
+                        "Pollution",
+                        "Propaganda",
+                        "Religion",
+                        "Seasons",
+                        "Society",
+                        "Technology",
+                        "Weather",
+                        "Other (not mentioned above)",
+                    ], happening ? happening["external-factor"] : "");
+                    addText(group, "Place", "organization-place", happening ? happening.place: "");
+                    addText(group, "Place specific", "organization-place-specific", happening ? happening["place-specific"]: "");
+                    let timeGroup = document.createElement("fieldset");
+                    let timeLegend = document.createElement("legend");
+                    timeLegend.innerText = "Time";
+                    timeGroup.appendChild(timeLegend);
+                    addSelect(timeGroup, "Season", "time-season", ["", "Hot season", "Rainy season"], happening ? happening.time.season: "");
+                    addText(timeGroup, "Year", "time-year", happening ? happening.time.year: "");
+                    addText(timeGroup, "Month", "time-month", happening ? happening.time.month: "");
+                    addText(timeGroup, "Day", "time-day", happening ? happening.time.day: "");
+                    addText(timeGroup, "Period", "time-period", happening ? happening.time.period: "");
+                    group.appendChild(timeGroup);
+                    happenings.appendChild(group);
+                }
+                let addHappening = document.getElementById("add-happening");
+                addHappening.addEventListener("click", ()=>{
+                    appendHappening();
+                });
+                data.categories.happening.forEach(h=>appendHappening(h));
+            </script>
+        </fieldset>
+        <fieldset style="margin-top: 20px;"><legend>People <button id="add-person">+</button></legend>
+            <ul id="people">
+            </ul>
+            <script>
+                function appendPerson(person) {
+                    let people = document.getElementById("people");
+                    let group = document.createElement("fieldset");
+                    let legend = document.createElement("legend");
+                    let button = document.createElement("button");
+                    button.classList.add("delete");
+                    button.innerHTML = "&times;";
+                    button.addEventListener("click", ()=>{
+                        people.removeChild(group);
+                    });
+                    legend.appendChild(button);
+                    group.appendChild(legend);
+                    addText(group, "Name", "person-name", person ? person.name : "");
+                    addSelect(group, "Density", "person-density", ["", "Central area", "Country side", "Suburbs area"], person ? person.density : "");
+                    addText(group, "Place", "person-place", person ? person.place : "");
+                    addText(group, "Place specific", "person-place-specific", person ? person["place-specific"] : "");
+                    addSelect(group, "Work type", "person-work-type", [
+                        "", 
+                        "Full time", 
+                        "Part time", 
+                        "Retired", 
+                        "Self-employed", 
+                        "Stay at home", 
+                        "Student", 
+                        "Unemployed"], person ? person["work-type"] : "");
+                    addSelect(group, "Education level", "person-education-level", [
+                        "", 
+                        "High School", 
+                        "Lower than High School", 
+                        "University Bachelor/College",
+                        "University Higher"], person ? person["education-level"] : "");
+                    addSelect(group, "Field", "person-field", [
+                        "",              
+                        "Agriculture and Fishery",
+                        "Architecture & Planning",
+                        "Arts & Entertainment",
+                        "Business",
+                        "Communication",
+                        "Craftmanship",
+                        "Education",
+                        "Engineering",
+                        "Government",
+                        "Health & Medicine",
+                        "Law and Politics",
+                        "Manufacturing",
+                        "Military",
+                        "Not-for-profit",
+                        "President",
+                        "Religion",
+                        "Sciences/Research",
+                        "Sport",
+                    ], person ? person.field : "");
+                    addText(group, "Work specific", "person-work-specific", person ? person["work-specific"] : "");
+                    addText(group, "Organization", "person-organization", person ? person.organization : "");
+                    addSelect(group, "Gender", "person-gender", [
+                        "",  
+                        "Female",
+                        "Male",
+                        "Undecided"
+                    ], person ? person.gender : "");
+                    addSelect(group, "Age", "person-age", [
+                        "",                 
+                        "Adult",
+                        "Elderly",
+                        "Older adult",
+                        "Pre-school",
+                        "School age/teenager",
+                        "Young adult",
+                    ], person ? person.age : "");
+                    addText(group, "Age specific", "person-age-specific", person ? person["age-specific"] : "");
+                    addText(group, "Role", "person-role", person ? person.role : "");
+                    addText(group, "Action", "person-action", person ? person.action : "");
+                    people.appendChild(group);
+                }
+                let addPerson = document.getElementById("add-person");
+                addPerson.addEventListener("click", ()=>{
+                    appendPerson();
+                });
+                data.categories.people.forEach(p=>appendPerson(p));
+            </script>    
+        </fieldset>
+        <fieldset style="margin-top: 20px;"><legend>Organizations <button id="add-organization">+</button></legend>
+            <ul id="organizations">
+            </ul>
+            <script>
+                function appendOrganization(organization) {
+                    let organizations = document.getElementById("organizations");
+                    let li = addText(organizations, "Name", "organization-name", organization ? organization.name : "");
+                    let button = document.createElement("button");
+                    button.classList.add("delete");
+                    button.innerHTML = "&times;";
+                    button.addEventListener("click", ()=>{
+                        organizations.removeChild(li);
+                    });
+                    li.appendChild(button);
+                }
+                let addOrganization = document.getElementById("add-organization");
+                addOrganization.addEventListener("click", ()=>{
+                    appendOrganization();
+                });
+                data.categories.organizations.forEach(o=>appendOrganization(o));
+            </script>
+        </fieldset>
+        <fieldset style="margin-top: 20px;"><legend>Product <button id="add-product">+</button></legend>
+            <ul id="products">
+            </ul>
+            <script>
+                function appendProduct(product) {
+                    let products = document.getElementById("products");
+                    let group = document.createElement("fieldset");
+                    let legend = document.createElement("legend");
+                    let button = document.createElement("button");
+                    button.classList.add("delete");
+                    button.innerHTML = "&times;";
+                    button.addEventListener("click", ()=>{
+                        people.removeChild(group);
+                    });
+                    legend.appendChild(button);
+                    group.appendChild(legend);
+                    addSelect(group, "Kind", "product-kind", [
+                        "devices/tools",
+                        "food/supplement",
+                        "house cleaning detergent",
+                        "hygiene and house cleaning",
+                        "personal hygiene product",
+                        "product kind",
+                        "service",
+                        "other (not mentioned above)"
+                    ], product ? product.kind : "");
+                    let hygieneGroup = document.createElement("fieldset");
+                    let hygieneLegend = document.createElement("legend");
+                    hygieneLegend.innerText = "Hygiene";
+                    hygieneGroup.appendChild(hygieneLegend);
+                    addSelect(hygieneGroup, "Head", "product-hygiene-head", [             
+                        "",
+                        "eyes",
+                        "face",
+                        "hair",
+                        "head",
+                        "lips",
+                        "mouth"
+                    ], product ? product.hygiene.head : "");
+                    addSelect(hygieneGroup, "Body", "product-hygiene-body", [             
+                        "",
+                        "armpits",
+                        "arms",
+                        "body",
+                        "feet",
+                        "hands",
+                        "other (not mentioned above)"
+                    ], product ? product.hygiene.body : "");
+                    addSelect(hygieneGroup, "Kind", "product-hygiene-kind", [             
+                        "",
+                        "anti-sweat/anti-smell",
+                        "cream/lotion",
+                        "diapers",
+                        "oral hygiene",
+                        "other (not mentioned above)",
+                        "shampoo",
+                        "soap",
+                        "sun screen",
+                        "treatment",
+                    ], product ? product.hygiene.kind : "");
+                    group.appendChild(hygieneGroup);
+                    let cleaningGroup = document.createElement("fieldset");
+                    let cleaningLegend = document.createElement("legend");
+                    cleaningLegend.innerText = "Cleaning";
+                    cleaningGroup.appendChild(cleaningLegend);
+                    addSelect(cleaningGroup, "Target", "product-cleaning-target", [             
+                        "",
+                        "house",
+                        "kitchen",
+                        "other (not mentioned above)"
+                    ], product ? product.cleaning.target : "");
+                    addSelect(cleaningGroup, "Function", "product-cleaning-function", [             
+                        "",
+                        "anti-odor/fragrance",
+                        "clothes softener",
+                        "detergent",
+                        "other (not mentioned above)"
+                    ], product ? product.cleaning.function : "");
+                    addSelect(cleaningGroup, "Form", "product-cleaning-form", [             
+                        "",           
+                        "cream",
+                        "foam",
+                        "liquid",
+                        "spray",
+                        "other (not mentioned above)"
+                    ], product ? product.cleaning.form : "");
+                    group.appendChild(cleaningGroup);
+                    addText(group, "Product specific", "product-specific", product ? product["product-specific"] : "");
+                    addText(group, "Service specific", "service-specific", product ? product["service-specific"] : "");
+                    addSelect(group, "Target gender", "target-gender", [
+                        "",
+                        "Women",
+                        "Men",
+                        "Not gender specific"
+                    ], product ? product["target-gender"] : "");
+                    addSelect(group, "Target age", "target-age", [
+                        "",
+                        "Infant",
+                        "Pre-school",
+                        "School age/teenager",
+                        "Young adult",
+                        "Adult",
+                        "Older adult",
+                        "Elderly",
+                    ], product ? product["target-age"] : "");
+                    products.appendChild(group);
+                }
+                let addProduct = document.getElementById("add-product");
+                addProduct.addEventListener("click", ()=>{
+                    appendProduct();
+                });
+                if (data.categories.products) {
+                    data.categories.products.forEach(p=>appendProduct(p));
+                }
+                else if (data.categories.product) {
+                    appendProduct(data.categories.product);
+                }
+            </script>
+        </fieldset>
+        <fieldset style="margin-top: 20px;"><legend>Topics <button id="add-topic">+</button></legend>
+            <ul id="topics">
+            </ul>
+            <script>
+                let addTopic = document.getElementById("add-topic");
+                function appendTopic(topic) {
+                    let topics = document.getElementById("topics");
+                    let li = addSelect(topics, null, "topic", [
+                        "Community",
+                        "Education",
+                        "Entertainment/Sports",
+                        "Environment",
+                        "Gender and ethnicity  ",
+                        "Health",
+                        "Life-style/Festival",
+                        "Other (not mentioned above)",
+                        "Personal hygiene/Beauty",
+                        "Policy/Government",
+                        "Religion",
+                        "Research and technology",
+                        "Tourism/Travelling",
+                        "Workforce"
+                    ], topic);
+                    let button = document.createElement("button");
+                    button.classList.add("delete");
+                    button.innerHTML = "&times;";
+                    button.addEventListener("click", ()=>{
+                        topics.removeChild(li);
+                        addTopic.disabled = topics.children.length > 2;
+                    });
+                    li.appendChild(button);
+                    addTopic.disabled = topics.children.length > 2;
+                }
+                addTopic.addEventListener("click", ()=>{
+                    appendTopic();
+                })
+                data.categories.topics.forEach(t=>appendTopic(t));
+            </script>
+        </fieldset>
+    </ul>
+    </fieldset>
+    <fieldset style="margin-top: 20px;"><legend>General</legend>
+        <ul>
+            <li><label for="comments">Comments</label> <textarea name="comments" id="root.comments"></textarea></li>
+            <fieldset style="margin-top: 20px;"><legend>Article</legend>
+                <ul>
+                    <li><label for="text">Text</label> <textarea name="text" id="root.article.text"></textarea></li>
+                    <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract"></textarea></li>
+                    <li><label for="keywords">Keywords</label> <input name="keywords" id="root.article.keywords"/></li>
+                </ul>
+            </fieldset>
+        </ul>
+    </fieldset>
+    <script>
+            setEditValue("root.comments", data.comments);
+            setEditValue("root.article.text", data.article.text);
+            setEditValue("root.article.abstract", data.article.abstract);
+            setEditValue("root.article.keywords", data.article.keywords);
+        </script>
+    </div>
+</body>
+</html>

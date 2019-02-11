@@ -39,7 +39,7 @@
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/group/province/<%- attribute %>/<%- encodeURIComponent(articles[i].name) %>/<%- encodeURIComponent(value) %>">
+            <a href="/group/categories.place.province/<%- attribute %>/<%- encodeURIComponent(articles[i].name) %>/<%- encodeURIComponent(value) %>">
             <span><%= articles[i].name %>,<%= articles[i].count %></span>
             </a>
         </li>

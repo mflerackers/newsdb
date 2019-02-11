@@ -1,45 +1,144 @@
-<div>Distinct: 
-    <a href="/"><span>All</span></a> / 
-    <a href="/list/newspaper"><span>Newspapers</span></a> / 
-    <a href="/list/density"><span>Density</span></a> / 
-    <a href="/list/geo"><span>Geo</span></a> / 
-    <a href="/list/province"><span>Province</span></a> / 
-    <a href="/list/external-factor"><span>External Factors</span></a> / 
-    <a href="/list/topic"><span>Topics</span></a> / 
-    <a href="/list/keyword"><span>Keywords</span></a> / 
-    <a href="/list/product"><span>Products</span></a>
+<div style="background-color: lightblue; padding: 5px; margin:-8px;">
+    <label for="query">query </label>
+    <select id="query" name="query">
+        <% for(var i=0; i<queryNames.length; i++) {  %>
+        <option value="<%= queryNames[i] %>"><%= queryNames[i] %></option>
+        <% } %>
+    </select>
+    <span id="field1-block">/ <select id="field1" name="field1">
+        <option></option>
+        <% for(var i=0; i<fieldNames.length; i++) {  %>
+        <option><%= fieldNames[i] %></option>
+        <% } %>
+    </select></span>
+    <span id="field2-block">/ <select id="field2" name="field2">
+        <option></option>
+        <% for(var i=0; i<fieldNames.length; i++) {  %>
+        <option><%= fieldNames[i] %></option>
+        <% } %>
+    </select></span>
+    <span id="value1-block">/ <input type="text" id="value1" name="value1"/></span>
+    <span id="value2-block">/ <input type="text" id="value2" name="value2"/></span>
+    <button id="go">Go</button>
 </div>
-<div>Count: 
-    <a href="/count/newspaper"><span>Newspapers</span></a> / 
-    <a href="/count/density"><span>Density</span></a> / 
-    <a href="/count/geo"><span>Geo</span></a> / 
-    <a href="/count/province"><span>Province</span></a> / 
-    <a href="/count/external-factor"><span>External Factors</span></a> / 
-    <a href="/count/topic"><span>Topics</span></a> / 
-    <a href="/count/keyword"><span>Keywords</span></a> / 
-    <a href="/count/product"><span>Products</span></a> / 
-    <a href="/count/gender"><span>Gender</span></a> / 
-    <a href="/count/education"><span>Education</span></a>
-</div>
-<div>Group by Density and: - 
-    <a href="/group/density/external-factor"><span>External Factors</span></a> / 
-    <a href="/group/density/topic"><span>Topics</span></a> / 
-    <a href="/group/density/keyword"><span>Keywords</span></a> / 
-    <a href="/group/density/product"><span>Products</span></a> / 
-    <a href="/group/density/gender"><span>Gender</span></a>
-</div>
-<div>Group by geo and:
-    <a href="/group/geo/external-factor"><span>External Factors</span></a> / 
-    <a href="/group/geo/topic"><span>Topics</span></a> / 
-    <a href="/group/geo/keyword"><span>Keywords</span></a> / 
-    <a href="/group/geo/product"><span>Products</span></a> / 
-    <a href="/group/geo/gender"><span>Gender</span></a>
-</div>
-<div>Group by province and:
-        <a href="/group/province/external-factor"><span>External Factors</span></a> / 
-        <a href="/group/province/topic"><span>Topics</span></a> / 
-        <a href="/group/province/keyword"><span>Keywords</span></a> / 
-        <a href="/group/province/product"><span>Products</span></a> / 
-        <a href="/group/province/gender"><span>Gender</span></a>
-    </div>
-<div><form action="/search">Abstract: <input type="text" name="query"><input type="submit" value="search"></form></div>
+<script>
+function getSelectValue(name) {
+    let select = document.getElementById(name);
+    return select ? select.options[select.selectedIndex].value : "";
+}
+function setSelectValue(name, value) {
+    let select = document.getElementById(name);
+    if (!select)
+        return;
+    select.selectedIndex = Array.prototype.findIndex.call(select.options, o=>o.value==value);
+}
+function getEditValue(name) {
+    let edit = document.getElementById(name);
+    return edit ? edit.value || "" : "";
+}
+function setEditValue(name, value) {
+    let edit = document.getElementById(name);
+    if (!edit)
+        return;
+    edit.value = value || "";
+}
+function updateVisibility(query) {
+    const field1Enable = ["list", "count", "group", "map"];
+    const field2Enable = ["group"];
+    const value1Enable = ["article", "list", "count", "group", "map", "search", "new", "edit"];
+    const value2Enable = ["group"];
+
+    document.getElementById("field1-block").style.display = field1Enable.includes(query) ? "inline" : "none";
+    document.getElementById("field2-block").style.display = field2Enable.includes(query) ? "inline" : "none";
+    document.getElementById("value1-block").style.display = value1Enable.includes(query) ? "inline" : "none";
+    document.getElementById("value2-block").style.display = value2Enable.includes(query) ? "inline" : "none";
+}
+window.addEventListener("load", ()=>{
+    let path = window.location.pathname;
+    let components = path.split("/")
+    let query = components[1];
+    setSelectValue("query", query);
+    switch (query) {
+        case "article":
+            setEditValue("value1", decodeURIComponent(components[2] || ""));
+            break;
+        case "list":
+        case "count":
+            setSelectValue("field1", components[2]);
+            setEditValue("value1", decodeURIComponent(components[3] || ""));
+            break;
+        case "group":
+            setSelectValue("field1", components[2]);
+            setSelectValue("field2", components[3]);
+            setEditValue("value1", decodeURIComponent(components[4] || ""));
+            setEditValue("value2", decodeURIComponent(components[5] || ""));
+            break;
+        case "map":
+            setSelectValue("field1", components[2]);
+            setEditValue("value1", decodeURIComponent(components[3] || ""));
+            break;
+        case "search":
+            let search = window.location.search;
+            if (search) {
+                let pairs = search.slice(1).split("&");
+                let params = {}
+                pairs.forEach(p=>{
+                    let [k,v] = p.split("=");
+                    params[k] = v;
+                })
+                setEditValue("value1", decodeURIComponent(params["query"] || ""));
+            }
+            break;
+        case "new":
+            break;
+        case "edit":
+            setEditValue("value1", decodeURIComponent(components[2] || ""));
+            break;
+    }
+    updateVisibility(query);
+});
+let query = document.getElementById("query");
+query.addEventListener("change", ()=>{
+    let query = getSelectValue("query");
+    updateVisibility(query);
+});
+let go = document.getElementById("go");
+go.addEventListener("click", ()=>{
+    let query = getSelectValue("query");
+    switch (query) {
+        case "article":
+            query = `http://localhost:3000/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+            break;
+        case "list":
+        case "count":
+            if (getEditValue("value1")) {
+                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+            }
+            else {
+                query = `http://localhost:3000/${query}/${getSelectValue("field1")}`;
+            }
+            break;
+        case "group":
+            if (getEditValue("value1") && getEditValue("value1")) {
+                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${getSelectValue("field2")}/${encodeURIComponent(getEditValue("value1"))}/${encodeURIComponent(getEditValue("value2"))}`;
+            }
+            else {
+                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getSelectValue("field2"))}`;
+            }
+            break;
+        case "map":
+            query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+            break;
+        case "search":
+            query = `http://localhost:3000/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
+            break;
+        case "new":
+            query = `http://localhost:3000/${query}`;
+            break;
+        case "edit":
+            query = `http://localhost:3000/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+            break;
+    }
+    window.location = query;
+});
+</script>
