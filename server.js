@@ -37,7 +37,12 @@ const queryNames = [
 app.get('/', function(req, res) {
     db.collection('thaidb').find().toArray((err, result) => {
         if (err) return console.log(err);
-        res.render('index.ejs', {articles:result, title:"All"});
+        res.render('index.ejs', {
+            articles:result, 
+            title:"All",
+            queryNames:queryNames,
+            fieldNames:fieldNames
+        });
     });
 })
 
