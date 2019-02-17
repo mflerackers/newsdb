@@ -140,6 +140,14 @@ function cleanLonLat(lat, lon) {
     };
 }
 
+function reformatDate(date) {
+    let [year, month, day] = date.split("-");
+    if (!month || !day) { return date; }
+    if (month.length < 2) { month = "0" + month; }
+    if (day.length < 2) { day = "0" + day; }
+    return `${year}-${month}-${day}`;
+}
+
 module.exports = function(path) {
     let contents = fs.readFileSync(path, "utf8");
     //console.log(contents);
@@ -156,7 +164,7 @@ module.exports = function(path) {
         "bibliography": {           
             "headline":                 record[2],
             "newspaper":                record[3].toLowerCase(),
-            "date":                     record[4],
+            "date":                     reformatDate(record[4]),
             "publication":              record[5],
             "page":                     record[6],
             "location":                 record[7],
