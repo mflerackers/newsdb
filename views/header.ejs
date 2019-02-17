@@ -57,8 +57,10 @@ window.addEventListener("load", ()=>{
     let path = window.location.pathname;
     let components = path.split("/")
     let query = components[1];
-    setSelectValue("query", query);
     switch (query) {
+        case "":
+            query = "all";
+            break;
         case "article":
             setEditValue("value1", decodeURIComponent(components[2] || ""));
             break;
@@ -95,6 +97,7 @@ window.addEventListener("load", ()=>{
             setEditValue("value1", decodeURIComponent(components[2] || ""));
             break;
     }
+    setSelectValue("query", query);
     updateVisibility(query);
 });
 let query = document.getElementById("query");
@@ -106,37 +109,40 @@ let go = document.getElementById("go");
 go.addEventListener("click", ()=>{
     let query = getSelectValue("query");
     switch (query) {
+        case "all":
+            query = `/`;
+            break;
         case "article":
-            query = `http://localhost:3000/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/${query}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "list":
         case "count":
             if (getEditValue("value1")) {
-                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+                query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
             }
             else {
-                query = `http://localhost:3000/${query}/${getSelectValue("field1")}`;
+                query = `/${query}/${getSelectValue("field1")}`;
             }
             break;
         case "group":
             if (getEditValue("value1") && getEditValue("value1")) {
-                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${getSelectValue("field2")}/${encodeURIComponent(getEditValue("value1"))}/${encodeURIComponent(getEditValue("value2"))}`;
+                query = `/${query}/${getSelectValue("field1")}/${getSelectValue("field2")}/${encodeURIComponent(getEditValue("value1"))}/${encodeURIComponent(getEditValue("value2"))}`;
             }
             else {
-                query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getSelectValue("field2"))}`;
+                query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getSelectValue("field2"))}`;
             }
             break;
         case "map":
-            query = `http://localhost:3000/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "search":
-            query = `http://localhost:3000/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "new":
-            query = `http://localhost:3000/${query}`;
+            query = `/${query}`;
             break;
         case "edit":
-            query = `http://localhost:3000/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/${query}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
     }
     window.location = query;
