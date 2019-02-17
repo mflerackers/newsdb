@@ -24,6 +24,7 @@ mongodb.connect('mongodb://localhost:27017', {
 })
 
 const queryNames = [
+    "all",
     "article",
     "list",
     "count",
@@ -349,6 +350,7 @@ app.get('/map/:param/:value', function(req, res) {
 
 app.get('/new', function(req, res) {
     res.render('new.ejs', {
+        data:{},
         queryNames:queryNames,
         fieldNames:fieldNames
     });
