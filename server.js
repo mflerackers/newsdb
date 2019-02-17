@@ -5,13 +5,15 @@ const app = express();
 const stats = require("./stats")
 const fieldNames = require("./field_names")
 
+require('dotenv').load();
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('resources'))
 
 var db
 
-mongodb.connect('mongodb://localhost:27017', { 
+mongodb.connect(`mongodb+srv://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.SERVER}?retryWrites=true`, {
     useNewUrlParser: true,
     reconnectTries: Number.MAX_VALUE,
     reconnectInterval: 1000 
@@ -342,7 +344,8 @@ app.get('/map/:param/:value', function(req, res) {
             value:req.params.value , 
             title:`Map where ${req.params.param} is ${req.params.value}`,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            mapboxAccessToken:process.env.MAPTOKEN
         });
         //res.status(200).send(result);
     });
