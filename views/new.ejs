@@ -30,6 +30,8 @@
             --max-width: 400px;
         }
     </style>
+    <script src="/countries.js"></script>
+    <script src="/thai_province_district.js"></script>
 </head>
 <body>
     <%- include('header'); -%>
@@ -48,6 +50,16 @@
         parent.appendChild(li);
         return li;
     }
+    function fillSelect(select, options, valueFor) {
+        if (!options)
+            return;
+        options.forEach(o=>{
+            let option = document.createElement("option");
+            option.value = valueFor ? valueFor(o) : o;
+            option.text = o;
+            select.appendChild(option);
+        });
+    }
     function addSelect(parent, labelText, name, options, value) {
         li = document.createElement("li");
         if (labelText) {
@@ -58,12 +70,7 @@
         }
         control = document.createElement("select");
         control.setAttribute("name", name);
-        options.forEach(o=>{
-            let option = document.createElement("option");
-            option.value = o;
-            option.text = o;
-            control.appendChild(option);
-        });
+        fillSelect(control, options);
         if (value) {
             control.selectedIndex = Array.prototype.findIndex.call(control.options, o=>o.value==value);
         }
@@ -107,7 +114,7 @@
     <ul>
         <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
         <li><label for="newspaper">Newspaper</label> <input name="newspaper" id="root.bibliography.newspaper"/></li>
-        <li><label for="date">Date</label> <input name="date" id="root.bibliography.date"/></li>
+        <li><label for="date">Date</label> <input type="date" name="date" id="root.bibliography.date"/></li>
         <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication"/></li>
         <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
         <li><label for="location">Location</label> 
@@ -136,10 +143,11 @@
                 <select name="size-article" id="root.bibliography.size.article">
                     <option></option>
                     <option>Full page</option>
-                    <option>Half of the page</option>
-                    <option>Less than a quarter of the page</option>
                     <option>More than half of the page</option>
+                    <option>Half of the page</option>
+                    <option>More than a quarter of the page</option>
                     <option>Quarter of the page</option>
+                    <option>Less than a quarter of the page</option>
                 </select>
             </li>
         </ul>
@@ -164,6 +172,7 @@
     </ul>
     </fieldset>
     <script>
+        if (data.bibliography) {
             setEditValue("root.bibliography.headline", data.bibliography.headline);
             setEditValue("root.bibliography.newspaper", data.bibliography.newspaper);
             setEditValue("root.bibliography.date", data.bibliography.date);
@@ -176,7 +185,8 @@
             setEditValue("root.bibliography.file", data.bibliography.file);
             setSelectValue("root.bibliography.photo", data.bibliography.photo);
             setSelectValue("root.bibliography.type", data.bibliography.type);
-        </script>
+        }
+    </script>
     <fieldset style="margin-top: 20px;"><legend>Categories</legend>
     <ul>
         <fieldset style="margin-top: 20px;"><legend>Focus</legend>
@@ -190,25 +200,44 @@
                 </li>
                 <li><label for="focus-level">Level</label> 
                     <select name="focus-level" id="root.categories.focus.level">
-                        <option></option>        
-                        <option>ASEAN</option>
-                        <option>Event/Happening</option>
-                        <option>International</option>
+                        <option></option>   
                         <option>Local</option>
-                        <option>National</option>
+                        <option>National</option>     
+                        <option>ASEAN</option>
+                        <option>International</option>
+                        
                     </select>
                 </li>
             </ul>
         </fieldset>
         <script>
-            setSelectValue("root.categories.focus.topic", data.categories.focus.topic);
-            setSelectValue("root.categories.focus.level", data.categories.focus.level);
+            if (data.categories && data.categories.focus) {
+                setSelectValue("root.categories.focus.topic", data.categories.focus.topic);
+                setSelectValue("root.categories.focus.level", data.categories.focus.level);
+            }
         </script>
         <fieldset style="margin-top: 20px;"><legend>Place</legend>
             <ul>
-                <li><label for="place-geo">Geo</label> <input name="place-geo" id="root.categories.place.geo"/></li>
-                <li><label for="place-longitude">Longitude</label> <input name="place-longitude" id="root.categories.place.longitude"/></li>
-                <li><label for="place-latitude">Latitude</label> <input name="place-latitude" id="root.categories.place.latitude"/></li>
+                <li><label for="place-geo">Geo</label> <input name="place-geo" id="root.categories.place.geo" disabled/></li>
+                <li><label for="place-geo-country">Country</label> 
+                    <select name="place-geo-country" id="root.categories.place.geo.country">
+                        <option></option>
+                    </select></li>
+                <li><label for="place-geo-province">Province</label> 
+                    <select name="place-geo-province" id="root.categories.place.geo.province">
+                        <option></option>
+                    </select></li>
+                <li><label for="place-geo-district">District</label> 
+                    <select name="place-geo-district" id="root.categories.place.geo.district">
+                        <option></option>
+                    </select></li>
+                <li><label for="place-geo-city">City</label> 
+                    <input name="place-geo-city" id="root.categories.place.geo.city"/></li>
+                <li><label></label> <div><button id="fetchGeo">Autofill geo coordinates</button></div></li>
+                <li><label for="place-latitude">Latitude</label> 
+                    <input name="place-latitude" id="root.categories.place.latitude"/></li>
+                <li><label for="place-longitude">Longitude</label> 
+                    <input name="place-longitude" id="root.categories.place.longitude"/></li>
                 <li><label for="place-type">Type</label> <select name="place-type" id="root.categories.place.type">
                         <option></option>
                         <option>Indoor</option>
@@ -227,21 +256,81 @@
                     <select name="place-density" id="root.categories.place.density">
                         <option></option>
                         <option>Central area</option>
-                        <option>Country side</option>
                         <option>Suburbs area</option>
+                        <option>Country side</option>
                     </select>
                 </li>
                 <li><label for="place-specific">Specific</label> <input name="place-specific" id="root.categories.place.specific"/></li>
             </ul>
         </fieldset>
         <script>
+            let country = document.getElementById("root.categories.place.geo.country");
+            let province = document.getElementById("root.categories.place.geo.province");
+            let district = document.getElementById("root.categories.place.geo.district");
+            fillSelect(country, countryList, (key)=>key.toLowerCase());
+            fillSelect(province, Object.keys(thaiProvinceDistrict), (key)=>key.toLowerCase());
+            function syncProvinceDistrict() {
+                let country = document.getElementById("root.categories.place.geo.country");
+                let province = document.getElementById("root.categories.place.geo.province");
+                let district = document.getElementById("root.categories.place.geo.district");
+                province.disabled = country.value != "thailand";
+                district.disabled = country.value != "thailand";
+                if (province.disabled) province.value="";
+                if (district.disabled) district.value="";
+            }
+            function syncDistricts() {
+                let province = document.getElementById("root.categories.place.geo.province");
+                let district = document.getElementById("root.categories.place.geo.district");
+                let provinceLower = province.value;
+                let provinceUpper = Object.keys(thaiProvinceDistrict).find((key)=>key.toLowerCase()===provinceLower);
+                let districtList = thaiProvinceDistrict[provinceUpper];
+                district.innerHTML = "<option></option>";
+                fillSelect(district, districtList, (key)=>key.toLowerCase());
+            }
+            if (data.categories && data.categories.place) {
                 setEditValue("root.categories.place.geo", data.categories.place.geo);
-                setEditValue("root.categories.place.longitude", data.categories.place.longitude);
+                let [country,province,district,city] = data.categories.place.geo.split(",");
+                setSelectValue("root.categories.place.geo.country", country);
+                setSelectValue("root.categories.place.geo.province", province);
+                syncDistricts();
+                syncProvinceDistrict();
+                setSelectValue("root.categories.place.geo.district", district);
+                setEditValue("root.categories.place.geo.city", city);
                 setEditValue("root.categories.place.latitude", data.categories.place.latitude);
+                setEditValue("root.categories.place.longitude", data.categories.place.longitude);
                 setSelectValue("root.categories.place.type", data.categories.place.type);
                 setSelectValue("root.categories.place.space", data.categories.place.space);
                 setSelectValue("root.categories.place.density", data.categories.place.density);
                 setEditValue("root.categories.place.specific", data.categories.place.specific);
+            }
+            else {
+                setSelectValue("root.categories.place.geo.country", "thailand");
+                setSelectValue("root.categories.place.geo.province", "bangkok");
+                syncDistricts();
+            }
+            country.addEventListener("change", ()=>{
+                syncProvinceDistrict();
+            });
+            province.addEventListener("change", ()=>{
+                syncDistricts();
+            });
+            fetchGeo.addEventListener("click", ()=>{
+                let location = [
+                    "root.categories.place.geo.city", 
+                    "root.categories.place.geo.district", 
+                    "root.categories.place.geo.province", 
+                    "root.categories.place.geo.country"
+                ].map(n=>document.getElementById(n).value).filter(n=>n!="").join(",");
+                let url = `https://nominatim.openstreetmap.org/search?q=${location}&format=json`;
+                fetch(url).then(function(response) {
+                    return response.json();
+                }).then(function(latLong) {
+                    let latitude = document.getElementById("root.categories.place.latitude");
+                    let longitude = document.getElementById("root.categories.place.longitude");
+                    latitude.value = latLong[0].lat;
+                    longitude.value = latLong[0].lon;
+                });
+            });
             </script>
         <fieldset style="margin-top: 20px;"><legend>Happening <button id="add-happening">+</button></legend>
             <ul id="happenings">
@@ -262,22 +351,23 @@
                     addText(group, "Name", "happening-name", happening ? happening.name : "");
                     addSelect(group, "External factor", "organization-external-factor", [
                         "",
-                        "Culture/Education",
-                        "Disaster",
-                        "Economy",
                         "Epidemy",
-                        "Geographical area",
-                        "Government",
-                        "Infrastructure",
-                        "Legal factors",
-                        "Politics",
+                        "Disaster",
+                        "Weather",
+                        "Seasons",
                         "Pollution",
+                        "Economy",
+                        "Culture/Education",
+                        "Government",
+                        "Politics",
                         "Propaganda",
                         "Religion",
-                        "Seasons",
+                        "Legal factors",
                         "Society",
+                        "Architecture",
+                        "Infrastructure",
                         "Technology",
-                        "Weather",
+                        "Geographical area",
                         "Other (not mentioned above)",
                     ], happening ? happening["external-factor"] : "");
                     addText(group, "Place", "organization-place", happening ? happening.place: "");
@@ -286,7 +376,7 @@
                     let timeLegend = document.createElement("legend");
                     timeLegend.innerText = "Time";
                     timeGroup.appendChild(timeLegend);
-                    addSelect(timeGroup, "Season", "time-season", ["", "Hot season", "Rainy season"], happening ? happening.time.season: "");
+                    addSelect(timeGroup, "Season", "time-season", ["", "Hot season", "Rainy season", "Cool season"], happening ? happening.time.season: "");
                     addText(timeGroup, "Year", "time-year", happening ? happening.time.year: "");
                     addText(timeGroup, "Month", "time-month", happening ? happening.time.month: "");
                     addText(timeGroup, "Day", "time-day", happening ? happening.time.day: "");
@@ -298,7 +388,9 @@
                 addHappening.addEventListener("click", ()=>{
                     appendHappening();
                 });
-                data.categories.happening.forEach(h=>appendHappening(h));
+                if (data.categories && data.categories.happening) {
+                    data.categories.happening.forEach(h=>appendHappening(h));
+                }
             </script>
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>People <button id="add-person">+</button></legend>
@@ -318,22 +410,22 @@
                     legend.appendChild(button);
                     group.appendChild(legend);
                     addText(group, "Name", "person-name", person ? person.name : "");
-                    addSelect(group, "Density", "person-density", ["", "Central area", "Country side", "Suburbs area"], person ? person.density : "");
+                    addSelect(group, "Density", "person-density", ["", "Central area", "Suburbs area", "Country side"], person ? person.density : "");
                     addText(group, "Place", "person-place", person ? person.place : "");
                     addText(group, "Place specific", "person-place-specific", person ? person["place-specific"] : "");
                     addSelect(group, "Work type", "person-work-type", [
                         "", 
                         "Full time", 
-                        "Part time", 
-                        "Retired", 
-                        "Self-employed", 
+                        "Part time",
+                        "Student",
+                        "Unemployed",
                         "Stay at home", 
-                        "Student", 
-                        "Unemployed"], person ? person["work-type"] : "");
+                        "Retired",
+                        "Self-employed"], person ? person["work-type"] : "");
                     addSelect(group, "Education level", "person-education-level", [
                         "", 
-                        "High School", 
                         "Lower than High School", 
+                        "High School", 
                         "University Bachelor/College",
                         "University Higher"], person ? person["education-level"] : "");
                     addSelect(group, "Field", "person-field", [
@@ -352,8 +444,8 @@
                         "Manufacturing",
                         "Military",
                         "Not-for-profit",
-                        "President",
                         "Religion",
+                        "Retail",
                         "Sciences/Research",
                         "Sport",
                     ], person ? person.field : "");
@@ -366,13 +458,14 @@
                         "Undecided"
                     ], person ? person.gender : "");
                     addSelect(group, "Age", "person-age", [
-                        "",                 
-                        "Adult",
-                        "Elderly",
-                        "Older adult",
+                        "",      
+                        "Infant",
                         "Pre-school",
                         "School age/teenager",
-                        "Young adult",
+                        "Young adult",  
+                        "Adult",
+                        "Older adult",
+                        "Elderly"
                     ], person ? person.age : "");
                     addText(group, "Age specific", "person-age-specific", person ? person["age-specific"] : "");
                     addText(group, "Role", "person-role", person ? person.role : "");
@@ -383,7 +476,9 @@
                 addPerson.addEventListener("click", ()=>{
                     appendPerson();
                 });
-                data.categories.people.forEach(p=>appendPerson(p));
+                if (data.categories && data.categories.people) {
+                    data.categories.people.forEach(p=>appendPerson(p));
+                }
             </script>    
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Organizations <button id="add-organization">+</button></legend>
@@ -405,7 +500,9 @@
                 addOrganization.addEventListener("click", ()=>{
                     appendOrganization();
                 });
-                data.categories.organizations.forEach(o=>appendOrganization(o));
+                if (data.categories && data.categories.organizations) {
+                    data.categories.organizations.forEach(o=>appendOrganization(o));
+                }
             </script>
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Product <button id="add-product">+</button></legend>
@@ -420,17 +517,16 @@
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
                     button.addEventListener("click", ()=>{
-                        people.removeChild(group);
+                        products.removeChild(group);
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
-                    addSelect(group, "Kind", "product-kind", [
-                        "devices/tools",
-                        "food/supplement",
+                    let kindPart = addSelect(group, "Kind", "product-kind", [
+                        "personal hygiene product",
                         "house cleaning detergent",
                         "hygiene and house cleaning",
-                        "personal hygiene product",
-                        "product kind",
+                        "food/supplement",
+                        "devices/tools",
                         "service",
                         "other (not mentioned above)"
                     ], product ? product.kind : "");
@@ -438,35 +534,47 @@
                     let hygieneLegend = document.createElement("legend");
                     hygieneLegend.innerText = "Hygiene";
                     hygieneGroup.appendChild(hygieneLegend);
-                    addSelect(hygieneGroup, "Head", "product-hygiene-head", [             
+                    let bodyPart = addSelect(hygieneGroup, "Body", "product-hygiene-body", [             
                         "",
-                        "eyes",
-                        "face",
-                        "hair",
-                        "head",
-                        "lips",
-                        "mouth"
-                    ], product ? product.hygiene.head : "");
-                    addSelect(hygieneGroup, "Body", "product-hygiene-body", [             
-                        "",
-                        "armpits",
-                        "arms",
                         "body",
-                        "feet",
+                        "head",
+                        "neck",
+                        "shoulders",
                         "hands",
+                        "arms",
+                        "armpits",
+                        "intimate area",
+                        "legs",
+                        "feet",
                         "other (not mentioned above)"
-                    ], product ? product.hygiene.body : "");
+                    ], product ? ((product.hygiene.head != "" && product.hygiene.head != "NA") ? "head" : product.hygiene.body) : "");
+                    let headPart = addSelect(hygieneGroup, "Head", "product-hygiene-head", [             
+                        "",
+                        "hair",
+                        "face",
+                        "eyebrows",
+                        "eyes",
+                        "ears",
+                        "mouth",
+                        "teeth",
+                        "lips",
+                        "other (not mentioned above)"
+                    ], product ? product.hygiene.head : "");
                     addSelect(hygieneGroup, "Kind", "product-hygiene-kind", [             
                         "",
-                        "anti-sweat/anti-smell",
-                        "cream/lotion",
-                        "diapers",
-                        "oral hygiene",
-                        "other (not mentioned above)",
-                        "shampoo",
                         "soap",
-                        "sun screen",
+                        "shampoo",
                         "treatment",
+                        "cream/lotion",
+                        "sun screen",
+                        "anti-oil products",
+                        "anti-sweat/anti-smell",
+                        "sterilizer",
+                        "oral hygiene",
+                        "diapers",
+                        "menstruation products/panty liner",
+                        "urine pads",
+                        "other (not mentioned above)"
                     ], product ? product.hygiene.kind : "");
                     group.appendChild(hygieneGroup);
                     let cleaningGroup = document.createElement("fieldset");
@@ -477,20 +585,31 @@
                         "",
                         "house",
                         "kitchen",
+                        "bathroom",
+                        "toilet",
+                        "outside",
+                        "clothes",
                         "other (not mentioned above)"
                     ], product ? product.cleaning.target : "");
                     addSelect(cleaningGroup, "Function", "product-cleaning-function", [             
                         "",
-                        "anti-odor/fragrance",
-                        "clothes softener",
                         "detergent",
+                        "fat/stains remover",
+                        "bleach",
+                        "clothes softener",
+                        "clothes hardener",
+                        "anti-odor/fragrance",
                         "other (not mentioned above)"
                     ], product ? product.cleaning.function : "");
                     addSelect(cleaningGroup, "Form", "product-cleaning-form", [             
-                        "",           
+                        "",
+                        "beads",     
                         "cream",
                         "foam",
                         "liquid",
+                        "powder",
+                        "solid",
+                        "sheets",
                         "spray",
                         "other (not mentioned above)"
                     ], product ? product.cleaning.form : "");
@@ -514,15 +633,43 @@
                         "Elderly",
                     ], product ? product["target-age"] : "");
                     products.appendChild(group);
+
+                    function syncProducts() {
+                        let body = bodyPart.getElementsByTagName("select")[0];
+                        let head = headPart.getElementsByTagName("select")[0];
+                        if (body.value == "head") {
+                            head.disabled = false;
+                        }
+                        else {
+                            head.disabled = true;
+                            head.value = "";
+                        }
+                    }
+                    let body = bodyPart.getElementsByTagName("select")[0];
+                    body.addEventListener("change", ()=>{
+                        syncProducts();
+                    });
+                    syncProducts();
+
+                    function syncGroups() {
+                        let kind = kindPart.getElementsByTagName("select")[0];
+                        hygieneGroup.disabled = kind.value != "personal hygiene product" && kind.value != "food/supplement";
+                        cleaningGroup.disabled = !hygieneGroup.disabled;
+                    }
+                    let kind = kindPart.getElementsByTagName("select")[0];
+                    kind.addEventListener("change", ()=>{
+                        syncGroups();
+                    });
+                    syncGroups();
                 }
                 let addProduct = document.getElementById("add-product");
                 addProduct.addEventListener("click", ()=>{
                     appendProduct();
                 });
-                if (data.categories.products) {
+                if (data.categories && data.categories.products) {
                     data.categories.products.forEach(p=>appendProduct(p));
                 }
-                else if (data.categories.product) {
+                else if (data.categories && data.categories.product) {
                     appendProduct(data.categories.product);
                 }
             </script>
@@ -537,18 +684,18 @@
                     let li = addSelect(topics, null, "topic", [
                         "Community",
                         "Education",
-                        "Entertainment/Sports",
-                        "Environment",
-                        "Gender and ethnicity  ",
+                        "Gender and ethnicity",
                         "Health",
-                        "Life-style/Festival",
-                        "Other (not mentioned above)",
                         "Personal hygiene/Beauty",
+                        "Life-style/Festival",
                         "Policy/Government",
                         "Religion",
                         "Research and technology",
+                        "Workforce",
                         "Tourism/Travelling",
-                        "Workforce"
+                        "Entertainment/Sports",
+                        "Environment",
+                        "Other (not mentioned above)"
                     ], topic);
                     let button = document.createElement("button");
                     button.classList.add("delete");
@@ -563,7 +710,9 @@
                 addTopic.addEventListener("click", ()=>{
                     appendTopic();
                 })
-                data.categories.topics.forEach(t=>appendTopic(t));
+                if (data.categories && data.categories.topics) {
+                    data.categories.topics.forEach(t=>appendTopic(t));
+                }
             </script>
         </fieldset>
     </ul>
@@ -582,9 +731,11 @@
     </fieldset>
     <script>
             setEditValue("root.comments", data.comments);
-            setEditValue("root.article.text", data.article.text);
-            setEditValue("root.article.abstract", data.article.abstract);
-            setEditValue("root.article.keywords", data.article.keywords);
+            if (data.categories && data.categories.article) {
+                setEditValue("root.article.text", data.article.text);
+                setEditValue("root.article.abstract", data.article.abstract);
+                setEditValue("root.article.keywords", data.article.keywords);
+            }
         </script>
     </div>
 </body>
