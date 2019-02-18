@@ -4,12 +4,25 @@ const mongodb = require('mongodb');
 const app = express();
 const stats = require("./stats")
 const fieldNames = require("./field_names")
+const bcrypt = require('bcrypt');
+const session = require('express-session');
 
 require('dotenv').load();
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 app.use(express.static('resources'))
+app.use(session({
+    secret: 'work hard',
+    resave: true,
+    saveUninitialized: false
+}));
+
+/*bcrypt.hash("", 10, function (err, hash){
+    if (err) return console.log(err);
+    console.log(hash);
+});*/
 
 var db
 
@@ -34,9 +47,140 @@ const queryNames = [
     "map",
     "search",
     "new",
-    "edit"
+    "edit",
+    "training/new",
+    "training/edit",
+    "training/list"
 ];
 
+function isAuthenticated(req) {
+    return req.session && req.session.userId ? true : false;
+}
+
+function isAdmin(req) {
+    return req.session && req.session.admin ? true : false;
+}
+
+app.get('/login', function(req, res) {
+    res.render('login.ejs', {
+        title: "Login",
+        username: "",
+        queryNames:queryNames,
+        fieldNames:fieldNames,
+        authenticated: isAuthenticated(req)
+    });
+})
+
+app.post('/login', function(req, res) {
+    if (req.body.username && req.body.password) {
+        db.collection('users').findOne({username:req.body.username}, (err, user) => {
+            if (err) return console.log(err);
+            if (user) {
+                bcrypt.compare(req.body.password, user.password, (err, result) => {
+                    console.log(result)
+                    if (result === true) {
+                        req.session.userId = user._id;
+                        req.session.admin = user.admin;
+                        return res.redirect('/training/list');
+                    }
+                    else {
+                        // Password mismatch
+                        return res.redirect('/login');
+                    }
+                });
+            }
+            else {
+                // User not found
+                return res.redirect('/login');
+            }
+        });
+    }
+    else {
+        return res.redirect('/login');
+    }
+})
+
+// Everything from hereon needs authentication
+app.use(function (req, res, next) {
+    if (!isAuthenticated(req)) {
+        return res.redirect('/login');
+    }
+    next();    
+});
+
+app.get('/logout', function(req, res) {
+    req.session.destroy(function(err) {
+        if (err) return console.log(err);
+        res.render('login.ejs', {
+            title: "Login",
+            username: "",
+            queryNames:queryNames,
+            fieldNames:fieldNames,
+            authenticated: true
+        });
+    });
+})
+
+app.post('/training/save', function(req, res) {
+    let json = req.body;
+    json.userId = req.session.userId;
+    console.log(json);
+    //response.send(req.body);
+    
+    db.collection("trainingdb").updateOne({id:json.id}, {$set:json}, { upsert: true }, function(err, result) {
+        if (err) {
+            res.status(200).send({success:false});
+            console.log("error", err);
+        }
+        else {
+            res.status(200).send({success:true});
+            console.log(json.id + " document updated");
+        }
+    });
+});
+
+app.get('/training/new', function(req, res) {
+    res.render('new.ejs', {
+        data:{
+            categories:{
+                place:{
+                    geo:"thailand,bangkok,,"
+                }
+            }
+        },
+        queryNames:queryNames,
+        fieldNames:fieldNames,
+        authenticated: true
+    });
+});
+
+app.get('/training/edit/:id', function(req, res) {
+    db.collection('trainingdb').findOne({id: req.params.id}, (err, result) => {
+        if (err) return console.log(err);
+        res.render('new.ejs', {
+            data:result,
+            queryNames:queryNames,
+            fieldNames:fieldNames,
+            authenticated: true
+        });
+    });
+});
+
+app.get('/training/list', function(req, res) {
+    
+    db.collection('trainingdb').find({userId: req.session.userId}).toArray((err, result) => {
+        if (err) return console.log(err);
+        res.render('traininglist.ejs', {
+            title: "Training data",
+            articles:result,
+            queryNames:queryNames,
+            fieldNames:fieldNames,
+            authenticated: true
+        });
+    });
+});
+
+// Everything from hereon needs admin
 app.get('/', function(req, res) {
     db.collection('thaidb').find().toArray((err, result) => {
         if (err) return console.log(err);
@@ -44,7 +188,8 @@ app.get('/', function(req, res) {
             articles:result, 
             title:"All",
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 })
@@ -67,7 +212,8 @@ app.get('/list/:name', function(req, res) {
             attribute:req.params.name, 
             title:`Distinct ${req.params.name}`,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 })
@@ -94,7 +240,8 @@ app.get('/list/:name/:value', function(req, res) {
             articles:result, 
             title:`${req.params.name} - ${req.params.value}`,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 })
@@ -108,7 +255,8 @@ app.get('/search', function(req, res) {
             attribute:req.params.name, 
             title:req.params.name,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 })
@@ -145,7 +293,8 @@ app.get('/count/:name', function(req, res) {
             title:`Count by ${req.params.name}`, 
             statistics:statistics,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 })
@@ -225,7 +374,8 @@ app.get('/group/:first/:second', function(req, res) {
                 categories:categories, 
                 datasets:datasets,
                 queryNames:queryNames,
-                fieldNames:fieldNames
+                fieldNames:fieldNames,
+                authenticated: true
             });
         }
     });
@@ -240,7 +390,8 @@ app.get('/group/:first/:second/:valueFirst/:valueSecond', function(req, res) {
             articles:result, 
             title:`${req.params.first}:${req.params.valueFirst} - ${req.params.second}:${req.params.valueSecond}`,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 });
@@ -345,6 +496,7 @@ app.get('/map/:param/:value', function(req, res) {
             title:`Map where ${req.params.param} is ${req.params.value}`,
             queryNames:queryNames,
             fieldNames:fieldNames,
+            authenticated: true,
             mapboxAccessToken:process.env.MAPTOKEN
         });
         //res.status(200).send(result);
@@ -355,7 +507,8 @@ app.get('/new', function(req, res) {
     res.render('new.ejs', {
         data:{},
         queryNames:queryNames,
-        fieldNames:fieldNames
+        fieldNames:fieldNames,
+        authenticated: true
     });
 });
 
@@ -365,7 +518,8 @@ app.get('/edit/:id', function(req, res) {
         res.render('new.ejs', {
             data:result,
             queryNames:queryNames,
-            fieldNames:fieldNames
+            fieldNames:fieldNames,
+            authenticated: true
         });
     });
 });

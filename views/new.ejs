@@ -45,6 +45,7 @@
         let control = document.createElement("input");
         control.setAttribute("type", "text");
         control.setAttribute("name", name);
+        control.classList.add(name);
         control.value = value || "";
         li.appendChild(control);
         parent.appendChild(li);
@@ -70,6 +71,7 @@
         }
         control = document.createElement("select");
         control.setAttribute("name", name);
+        control.classList.add(name);
         fillSelect(control, options);
         if (value) {
             control.selectedIndex = Array.prototype.findIndex.call(control.options, o=>o.value==value);
@@ -186,6 +188,25 @@
             setSelectValue("root.bibliography.photo", data.bibliography.photo);
             setSelectValue("root.bibliography.type", data.bibliography.type);
         }
+
+        function getBibliography() {
+            return {
+                headline: getEditValue("root.bibliography.headline"),
+                newspaper: getEditValue("root.bibliography.newspaper"),
+                date: getEditValue("root.bibliography.date"),
+                publication: getEditValue("root.bibliography.publication"),
+                page: getEditValue("root.bibliography.page"),
+                location: getEditValue("root.bibliography.location"),
+                size:{
+                    headline: getEditValue("root.bibliography.size.headline"),
+                    "col-inch": getEditValue("root.bibliography.size.col-inch"),
+                    article: getEditValue("root.bibliography.size.article"),
+                },
+                file: getEditValue("root.bibliography.file"),
+                photo: getEditValue("root.bibliography.photo"),
+                type: getEditValue("root.bibliography.type")
+            };
+        }
     </script>
     <fieldset style="margin-top: 20px;"><legend>Categories</legend>
     <ul>
@@ -215,6 +236,13 @@
                 setSelectValue("root.categories.focus.topic", data.categories.focus.topic);
                 setSelectValue("root.categories.focus.level", data.categories.focus.level);
             }
+
+            function getFocus() {
+            return {
+                topic: getEditValue("root.categories.focus.topic"),
+                level: getEditValue("root.categories.focus.level")
+            };
+        }
         </script>
         <fieldset style="margin-top: 20px;"><legend>Place</legend>
             <ul>
@@ -331,6 +359,27 @@
                     longitude.value = latLong[0].lon;
                 });
             });
+
+            function getPlace() {
+                return {
+                    geo: [
+                        getEditValue("root.categories.place.geo.country"),
+                        getEditValue("root.categories.place.geo.province"),
+                        getEditValue("root.categories.place.geo.district"),
+                        getEditValue("root.categories.place.geo.city")
+                    ].join(","),
+                    country: getEditValue("root.categories.place.geo.country"),
+                    province: getEditValue("root.categories.place.geo.province"),
+                    district: getEditValue("root.categories.place.geo.district"),
+                    city: getEditValue("root.categories.place.geo.city"),
+                    latitude: getEditValue("root.categories.place.latitude"),
+                    longitude: getEditValue("root.categories.place.longitude"),
+                    type: getEditValue("root.categories.place.type"),
+                    space: getEditValue("root.categories.place.space"),
+                    density: getEditValue("root.categories.place.density"),
+                    specific: getEditValue("root.categories.place.specific")
+                }
+            };
             </script>
         <fieldset style="margin-top: 20px;"><legend>Happening <button id="add-happening">+</button></legend>
             <ul id="happenings">
@@ -338,18 +387,20 @@
             <script>
                 function appendHappening(happening) {
                     let happenings = document.getElementById("happenings");
+                    let happeningContainer = document.createElement("happening");
                     let group = document.createElement("fieldset");
+                    happeningContainer.appendChild(group);
                     let legend = document.createElement("legend");
                     let button = document.createElement("button");
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
                     button.addEventListener("click", ()=>{
-                        happenings.removeChild(group);
+                        happenings.removeChild(happeningContainer);
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
                     addText(group, "Name", "happening-name", happening ? happening.name : "");
-                    addSelect(group, "External factor", "organization-external-factor", [
+                    addSelect(group, "External factor", "happening-external-factor", [
                         "",
                         "Epidemy",
                         "Disaster",
@@ -370,19 +421,19 @@
                         "Geographical area",
                         "Other (not mentioned above)",
                     ], happening ? happening["external-factor"] : "");
-                    addText(group, "Place", "organization-place", happening ? happening.place: "");
-                    addText(group, "Place specific", "organization-place-specific", happening ? happening["place-specific"]: "");
+                    addText(group, "Place", "happening-place", happening ? happening.place: "");
+                    addText(group, "Place specific", "happening-place-specific", happening ? happening["place-specific"]: "");
                     let timeGroup = document.createElement("fieldset");
                     let timeLegend = document.createElement("legend");
                     timeLegend.innerText = "Time";
                     timeGroup.appendChild(timeLegend);
-                    addSelect(timeGroup, "Season", "time-season", ["", "Hot season", "Rainy season", "Cool season"], happening ? happening.time.season: "");
-                    addText(timeGroup, "Year", "time-year", happening ? happening.time.year: "");
-                    addText(timeGroup, "Month", "time-month", happening ? happening.time.month: "");
-                    addText(timeGroup, "Day", "time-day", happening ? happening.time.day: "");
-                    addText(timeGroup, "Period", "time-period", happening ? happening.time.period: "");
+                    addSelect(timeGroup, "Season", "happening-time-season", ["", "Hot season", "Rainy season", "Cool season"], happening ? happening.time.season: "");
+                    addText(timeGroup, "Year", "happening-time-year", happening ? happening.time.year: "");
+                    addText(timeGroup, "Month", "happening-time-month", happening ? happening.time.month: "");
+                    addText(timeGroup, "Day", "happening-time-day", happening ? happening.time.day: "");
+                    addText(timeGroup, "Period", "happening-time-period", happening ? happening.time.period: "");
                     group.appendChild(timeGroup);
-                    happenings.appendChild(group);
+                    happenings.appendChild(happeningContainer);
                 }
                 let addHappening = document.getElementById("add-happening");
                 addHappening.addEventListener("click", ()=>{
@@ -390,6 +441,28 @@
                 });
                 if (data.categories && data.categories.happening) {
                     data.categories.happening.forEach(h=>appendHappening(h));
+                }
+
+                function getHappening(happening) {
+                    return {
+                        name: happening.getElementsByClassName("happening-name")[0].value,
+                        "external-factor": happening.getElementsByClassName("happening-external-factor")[0].value,
+                        place: happening.getElementsByClassName("happening-place")[0].value,
+                        "place-specific": happening.getElementsByClassName("happening-place-specific")[0].value,
+                        time:{
+                            season: happening.getElementsByClassName("happening-time-season")[0].value,
+                            year: happening.getElementsByClassName("happening-time-year")[0].value,
+                            month: happening.getElementsByClassName("happening-time-month")[0].value,
+                            day: happening.getElementsByClassName("happening-time-day")[0].value,
+                            period: happening.getElementsByClassName("happening-time-period")[0].value
+                        }
+                    }
+                }
+
+                function getHappenings() {
+                    let happenings = document.getElementById("happenings");
+                    let happeningList = happenings.getElementsByTagName("happening");
+                    return Array.prototype.map.call(happeningList, happening=>getHappening(happening));
                 }
             </script>
         </fieldset>
@@ -479,6 +552,31 @@
                 if (data.categories && data.categories.people) {
                     data.categories.people.forEach(p=>appendPerson(p));
                 }
+
+                function getPerson(person) {
+                    return {
+                        name: person.getElementsByClassName("person-name")[0].value,
+                        density: person.getElementsByClassName("person-density")[0].value,
+                        place: person.getElementsByClassName("person-place")[0].value,
+                        "place-specific": person.getElementsByClassName("person-place-specific")[0].value,
+                        "work-type": person.getElementsByClassName("person-work-type")[0].value,
+                        "education-level": person.getElementsByClassName("person-education-level")[0].value,
+                        "field": person.getElementsByClassName("person-field")[0].value,
+                        "work-specific": person.getElementsByClassName("person-work-specific")[0].value,
+                        "organization": person.getElementsByClassName("person-organization")[0].value,
+                        "gender": person.getElementsByClassName("person-gender")[0].value,
+                        "age": person.getElementsByClassName("person-age")[0].value,
+                        "age-specific": person.getElementsByClassName("person-age-specific")[0].value,
+                        "role": person.getElementsByClassName("person-role")[0].value,
+                        "action": person.getElementsByClassName("person-action")[0].value
+                    }
+                }
+
+                function getPeople() {
+                    let people = document.getElementById("people");
+                    fieldsets = people.getElementsByTagName("fieldset");
+                    return Array.prototype.map.call(fieldsets, person=>getPerson(person));
+                }
             </script>    
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Organizations <button id="add-organization">+</button></legend>
@@ -503,6 +601,12 @@
                 if (data.categories && data.categories.organizations) {
                     data.categories.organizations.forEach(o=>appendOrganization(o));
                 }
+
+                function getOrganizations() {
+                    let organizations = document.getElementById("organizations");
+                    let selects = organizations.getElementsByTagName("select");
+                    return Array.prototype.map.call(selects, topic=>topic.value);
+                }
             </script>
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Product <button id="add-product">+</button></legend>
@@ -511,13 +615,15 @@
             <script>
                 function appendProduct(product) {
                     let products = document.getElementById("products");
+                    let productContainer = document.createElement("product");
                     let group = document.createElement("fieldset");
+                    productContainer.appendChild(group);
                     let legend = document.createElement("legend");
                     let button = document.createElement("button");
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
                     button.addEventListener("click", ()=>{
-                        products.removeChild(group);
+                        products.removeChild(productContainer);
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
@@ -632,7 +738,7 @@
                         "Older adult",
                         "Elderly",
                     ], product ? product["target-age"] : "");
-                    products.appendChild(group);
+                    products.appendChild(productContainer);
 
                     function syncProducts() {
                         let body = bodyPart.getElementsByTagName("select")[0];
@@ -671,6 +777,32 @@
                 }
                 else if (data.categories && data.categories.product) {
                     appendProduct(data.categories.product);
+                }
+
+                function getProduct(product) {
+                    return {
+                        kind: product.getElementsByClassName("product-kind")[0].value,
+                        hygiene: {
+                            body: product.getElementsByClassName("product-hygiene-body")[0].value,
+                            head: product.getElementsByClassName("product-hygiene-head")[0].value,
+                            kind: product.getElementsByClassName("product-hygiene-kind")[0].value,
+                        },
+                        cleaning: {
+                            target: product.getElementsByClassName("product-cleaning-target")[0].value,
+                            "function": product.getElementsByClassName("product-cleaning-function")[0].value,
+                            form: product.getElementsByClassName("product-cleaning-form")[0].value,
+                        },
+                        "product-specific": product.getElementsByClassName("product-specific")[0].value,
+                        "service-specific": product.getElementsByClassName("service-specific")[0].value,
+                        "target-gender": product.getElementsByClassName("target-gender")[0].value,
+                        "target-age": product.getElementsByClassName("target-age")[0].value,
+                    }
+                }
+
+                function getProducts() {
+                    let products = document.getElementById("product");
+                    productContainers = people.getElementsByTagName("productContainer");
+                    return Array.prototype.map.call(productContainers, product=>getProduct(product));
                 }
             </script>
         </fieldset>
@@ -713,6 +845,12 @@
                 if (data.categories && data.categories.topics) {
                     data.categories.topics.forEach(t=>appendTopic(t));
                 }
+
+                function getTopics() {
+                    let topics = document.getElementById("topics");
+                    let selects = topics.getElementsByTagName("select");
+                    return Array.prototype.map.call(selects, topic=>topic.value);
+                }
             </script>
         </fieldset>
     </ul>
@@ -730,13 +868,60 @@
         </ul>
     </fieldset>
     <script>
-            setEditValue("root.comments", data.comments);
-            if (data.categories && data.categories.article) {
-                setEditValue("root.article.text", data.article.text);
-                setEditValue("root.article.abstract", data.article.abstract);
-                setEditValue("root.article.keywords", data.article.keywords);
+        setEditValue("root.comments", data.comments);
+        if (data.article) {
+            setEditValue("root.article.text", data.article.text);
+            setEditValue("root.article.abstract", data.article.abstract);
+            setEditValue("root.article.keywords", data.article.keywords);
+        }
+    </script>
+    <button id="save">Save</button>
+    <script>
+    document.getElementById("save").addEventListener("click", ()=>{
+        let data = {
+            id: getEditValue("root.id"),
+            relevance: getEditValue("root.relevance"),
+            bibliography: getBibliography(),
+            categories: {
+                focus: getFocus(),
+                place: getPlace(),
+                happenings: getHappenings(),
+                people: getPeople(),
+                organizations: getOrganizations(),
+                products: getProducts(),
+                topics: getTopics()
+            },
+            comments: getEditValue("root.comments"),
+            article:{
+                text: getEditValue("root.article.text"),
+                abstract: getEditValue("root.article.abstract"),
+                keywords: getEditValue("root.article.keywords")
             }
-        </script>
+        }
+        //alert(JSON.stringify(data,null,2));
+        //let container = document.getElementsByClassName("container")[0];
+        //container.classList.add('loader');
+        document.getElementById("save").disabled = true;
+        fetch("/training/save", {
+            method: 'POST', // or 'PUT'
+            body: JSON.stringify(data),
+            headers:{
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res.json())
+        .then(response => {
+            //container.classList.remove('loader');
+            document.getElementById("save").disabled = false;
+            console.log('Success:', JSON.stringify(response));
+            window.location = "/training/list";
+        })
+        .catch(error => {
+            //container.classList.remove('loader');
+            document.getElementById("save").disabled = false;
+            console.error('Error:', error);
+        });
+    });
+    </script>
     </div>
 </body>
 </html>

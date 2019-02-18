@@ -1,25 +1,34 @@
-<div style="background-color: lightblue; padding: 5px; margin:-8px;">
-    <label for="query">query </label>
-    <select id="query" name="query">
-        <% for(var i=0; i<queryNames.length; i++) {  %>
-        <option value="<%= queryNames[i] %>"><%= queryNames[i] %></option>
-        <% } %>
-    </select>
-    <span id="field1-block">/ <select id="field1" name="field1">
-        <option></option>
-        <% for(var i=0; i<fieldNames.length; i++) {  %>
-        <option><%= fieldNames[i] %></option>
-        <% } %>
-    </select></span>
-    <span id="field2-block">/ <select id="field2" name="field2">
-        <option></option>
-        <% for(var i=0; i<fieldNames.length; i++) {  %>
-        <option><%= fieldNames[i] %></option>
-        <% } %>
-    </select></span>
-    <span id="value1-block">/ <input type="text" id="value1" name="value1"/></span>
-    <span id="value2-block">/ <input type="text" id="value2" name="value2"/></span>
-    <button id="go">Go</button>
+<div class="header" style="background-color: lightblue; padding: 5px; margin:-8px;">
+    <div class="query-block">
+        <label for="query">query </label>
+        <select id="query" name="query">
+            <% for(var i=0; i<queryNames.length; i++) {  %>
+            <option value="<%= queryNames[i] %>"><%= queryNames[i] %></option>
+            <% } %>
+        </select>
+        <span id="field1-block">/ <select id="field1" name="field1">
+            <option></option>
+            <% for(var i=0; i<fieldNames.length; i++) {  %>
+            <option><%= fieldNames[i] %></option>
+            <% } %>
+        </select></span>
+        <span id="field2-block">/ <select id="field2" name="field2">
+            <option></option>
+            <% for(var i=0; i<fieldNames.length; i++) {  %>
+            <option><%= fieldNames[i] %></option>
+            <% } %>
+        </select></span>
+        <span id="value1-block">/ <input type="text" id="value1" name="value1"/></span>
+        <span id="value2-block">/ <input type="text" id="value2" name="value2"/></span>
+        <button id="go">Go</button>
+    </div>
+    <div class="login-block">
+    <% if (authenticated) { %>
+        <button onclick="window.location='/logout'">Logout</button>
+    <% } else { %>
+        <button onclick="window.location='/login'">Login</button>
+    <% } %>
+    </div>
 </div>
 <script>
 function getSelectValue(name) {
@@ -45,7 +54,7 @@ function setEditValue(name, value) {
 function updateVisibility(query) {
     const field1Enable = ["list", "count", "group", "map"];
     const field2Enable = ["group"];
-    const value1Enable = ["article", "list", "count", "group", "map", "search", "new", "edit"];
+    const value1Enable = ["article", "list", "count", "group", "map", "search", "new", "edit", "training/edit"];
     const value2Enable = ["group"];
 
     document.getElementById("field1-block").style.display = field1Enable.includes(query) ? "inline" : "none";
@@ -57,6 +66,9 @@ window.addEventListener("load", ()=>{
     let path = window.location.pathname;
     let components = path.split("/")
     let query = components[1];
+    if (query === "training") {
+        query += "/" + components[2];
+    }
     switch (query) {
         case "":
             query = "all";
@@ -92,9 +104,12 @@ window.addEventListener("load", ()=>{
             }
             break;
         case "new":
+        case "training/new":
+        case "training/list":
             break;
         case "edit":
-            setEditValue("value1", decodeURIComponent(components[2] || ""));
+        case "training/edit":
+            setEditValue("value1", decodeURIComponent((query === "edit" ? components[2] : components[3]) || ""));
             break;
     }
     setSelectValue("query", query);
@@ -139,9 +154,12 @@ go.addEventListener("click", ()=>{
             query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "new":
+        case "training/new":
+        case "training/list":
             query = `/${query}`;
             break;
         case "edit":
+        case "training/edit":
             query = `/${query}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
     }

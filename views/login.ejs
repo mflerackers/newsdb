@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : <%- title %></title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <style>
+            .container {
+                width: 80%;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            fieldset ul li {
+                padding: 5px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            textarea {
+                vertical-align: top;
+            }
+            label {
+                flex: 1 0 100px;
+                max-width: 140px;
+                margin-right: 10px;
+                text-align: right;
+            }
+            label + * {
+                flex: 1 0 220px;
+                --max-width: 400px;
+            }
+        </style>
+</head>
+<body>
+    <%- include('header'); -%>
+    <div class="container">
+    <form method="post" action="/login">
+    <fieldset style="margin-top: 20px;"><legend>Login</legend>
+    <ul>
+        <li><label for="username">Username</label> <input name="username" value="<%- username %>"/></li>
+        <li><label for="password">Password</label> <input name="password" type="password"/></li>
+        <li><input type="submit" value="Login"/></li>
+    </ul>
+    </fieldset>
+    </form>
+    </div>
+</body>
+</html>

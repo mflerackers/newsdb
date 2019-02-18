@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : <%- title %></title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1><%- title %></h1>
+    <div><%= articles.length %> results</div>
+    <ul class="articles">
+        <li class="article">
+            <a href="/training/new">
+            <span>Create new</span>
+            </a>
+        </li>
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">
+            <a href="/training/edit/<%= encodeURIComponent(articles[i].id) %>">
+            <span>id: <%= articles[i].id %></span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</body>
+</html>

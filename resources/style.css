@@ -1,3 +1,8 @@
+.header {
+    display: flex; 
+    justify-content: space-between;
+}
+
 ul {
     list-style-type: none;
     padding: 0;
@@ -26,4 +31,22 @@ button.delete {
 }
 button:hover.delete {
     background-color:lightpink;
+}
+
+.loader {
+    position: relative;
+}
+
+.loader::after {
+    background-color: rgba(0,0,0,.7);
+    content: 'Loading...';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
 }
