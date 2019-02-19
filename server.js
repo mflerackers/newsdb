@@ -139,6 +139,19 @@ app.post('/training/save', function(req, res) {
     });
 });
 
+app.get('/training/delete/:id', function(req, res) {
+    db.collection("trainingdb").deleteOne({id:req.params.id, userId:req.session.userId}, function(err, result) {
+        if (err) {
+            console.log(err);
+            return res.redirect('/training/list');
+        }
+        else {
+            console.log(req.params.id + " document deleted");
+            return res.redirect('/training/list');
+        }
+    });
+});
+
 app.get('/training/new', function(req, res) {
     res.render('new.ejs', {
         data:{
@@ -168,7 +181,7 @@ app.get('/training/edit/:id', function(req, res) {
 
 app.get('/training/list', function(req, res) {
     
-    db.collection('trainingdb').find({userId: req.session.userId}).toArray((err, result) => {
+    db.collection('trainingdb').find(req.session.admin ? {} : {userId: req.session.userId}).toArray((err, result) => {
         if (err) return console.log(err);
         res.render('traininglist.ejs', {
             title: "Training data",

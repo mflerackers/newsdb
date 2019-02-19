@@ -17,9 +17,16 @@
         </li>
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
+            <button class="delete" onclick="{
+                if (window.confirm('Are you sure you want to delete <%=articles[i].id%>')) {
+                    window.location='/training/delete/<%= encodeURIComponent(articles[i].id) %>';
+                }
+            }">&times;</button>
             <a href="/training/edit/<%= encodeURIComponent(articles[i].id) %>">
-            <span>id: <%= articles[i].id %></span>
+            <span><%= articles[i].id %></span>
             </a>
+            <%= articles[i].bibliography.headline %><br>
+            <span style="color:silver"><%= articles[i].article.abstract %></span>
         </li>
         <% } %>
     </ul>

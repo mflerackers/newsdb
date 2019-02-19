@@ -114,13 +114,19 @@
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
+        <li><label for="total">Total articles</label> <input name="total" id="root.bibliography.total"/></li>
         <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
+        <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai"/></li>
         <li><label for="newspaper">Newspaper</label> <input name="newspaper" id="root.bibliography.newspaper"/></li>
         <li><label for="date">Date</label> <input type="date" name="date" id="root.bibliography.date"/></li>
         <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication"/></li>
         <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
         <li><label for="location">Location</label> 
             <select name="location" id="root.bibliography.location">
+                <option>Left</option>
+                <option>Right</option>
+                <option>Upper</option>
+                <option>Lower</option>
                 <option>Full page</option>
                 <option>Lower left</option>
                 <option>Lower right</option>
@@ -175,7 +181,9 @@
     </fieldset>
     <script>
         if (data.bibliography) {
+            setEditValue("root.bibliography.total", data.bibliography.total);
             setEditValue("root.bibliography.headline", data.bibliography.headline);
+            setEditValue("root.bibliography.headline-thai", data.bibliography["headline-thai"]);
             setEditValue("root.bibliography.newspaper", data.bibliography.newspaper);
             setEditValue("root.bibliography.date", data.bibliography.date);
             setEditValue("root.bibliography.publication", data.bibliography.publication);
@@ -191,7 +199,9 @@
 
         function getBibliography() {
             return {
+                total: getEditValue("root.bibliography.total"),
                 headline: getEditValue("root.bibliography.headline"),
+                "headline-thai": getEditValue("root.bibliography.headline-thai"),
                 newspaper: getEditValue("root.bibliography.newspaper"),
                 date: getEditValue("root.bibliography.date"),
                 publication: getEditValue("root.bibliography.publication"),
@@ -439,8 +449,11 @@
                 addHappening.addEventListener("click", ()=>{
                     appendHappening();
                 });
-                if (data.categories && data.categories.happening) {
-                    data.categories.happening.forEach(h=>appendHappening(h));
+                if (data.categories && data.categories.happenings) {
+                    data.categories.happenings.forEach(h=>appendHappening(h));
+                }
+                else if (data.categories && data.categories.happening) {
+                    appendHappening(data.categories.happening);
                 }
 
                 function getHappening(happening) {
@@ -604,8 +617,8 @@
 
                 function getOrganizations() {
                     let organizations = document.getElementById("organizations");
-                    let selects = organizations.getElementsByTagName("select");
-                    return Array.prototype.map.call(selects, topic=>topic.value);
+                    let inputs = organizations.getElementsByTagName("input");
+                    return Array.prototype.map.call(inputs, organization=>({name:organization.value}));
                 }
             </script>
         </fieldset>
@@ -615,7 +628,7 @@
             <script>
                 function appendProduct(product) {
                     let products = document.getElementById("products");
-                    let productContainer = document.createElement("product");
+                    let productContainer = document.createElement("productContainer");
                     let group = document.createElement("fieldset");
                     productContainer.appendChild(group);
                     let legend = document.createElement("legend");
@@ -630,84 +643,166 @@
                     let kindPart = addSelect(group, "Kind", "product-kind", [
                         "personal hygiene product",
                         "house cleaning detergent",
-                        "hygiene and house cleaning",
                         "food/supplement",
                         "devices/tools",
                         "service",
                         "other (not mentioned above)"
                     ], product ? product.kind : "");
-                    let hygieneGroup = document.createElement("fieldset");
-                    let hygieneLegend = document.createElement("legend");
-                    hygieneLegend.innerText = "Hygiene";
-                    hygieneGroup.appendChild(hygieneLegend);
-                    let bodyPart = addSelect(hygieneGroup, "Body", "product-hygiene-body", [             
+                    function isBody(product) {
+                        return product.target === "body" || (product.hygiene && product.hygiene.body && product.hygiene.body != "NA");
+                    }
+                    function isHead(product) {
+                        return product.subtarget === "head" || (product.hygiene && product.hygiene.head && product.hygiene.head != "NA");
+                    }
+                    function isEnvironment(product) {
+                        return  product.target === "environment" || (product.cleaning && product.cleaning.target && product.cleaning.target != "NA");
+                    }
+                    function getTarget(product) {
+                        if (product) {
+                            if (product.target) {
+                                return product.target;
+                            }
+                            else if (isBody(product) || isHead(product)) {
+                                return "body";
+                            }
+                            else if (isEnvironment(product)) {
+                                return "environment";
+                            }
+                            else {
+                                return "";
+                            }
+                        }
+                        else {
+                            return "";
+                        }
+                    }
+                    function getSubTarget(product) {
+                        if (product.subtarget) {
+                            return product.subtarget;
+                        }
+                        else {
+                            return product.hygiene && product.hygiene.body && product.hygiene.body != "NA" ? product.hygiene.body : "";
+                        }
+                    }
+                    function getSubSubTarget(product) {
+                        if (product.subsubtarget) {
+                            return product.subsubtarget;
+                        }
+                        else {
+                            return product.hygiene && product.hygiene.head && product.hygiene.head != "NA" ? product.hygiene.head : "";
+                        }
+                    }
+                    function getForm(product) {
+                        return product.form || (product.cleaning ? product.cleaning.form : "");
+                    }
+                    function getFunction(product) {
+                        return product.function || (product.hygiene ? product.hygiene.kind : product.cleaning ? product.cleaning.function : "");
+                    }
+                    let target = addSelect(group, "Target", "product-target", [
                         "",
                         "body",
-                        "head",
-                        "neck",
-                        "shoulders",
-                        "hands",
-                        "arms",
-                        "armpits",
-                        "intimate area",
-                        "legs",
-                        "feet",
-                        "other (not mentioned above)"
-                    ], product ? ((product.hygiene.head != "" && product.hygiene.head != "NA") ? "head" : product.hygiene.body) : "");
-                    let headPart = addSelect(hygieneGroup, "Head", "product-hygiene-head", [             
-                        "",
-                        "hair",
-                        "face",
-                        "eyebrows",
-                        "eyes",
-                        "ears",
-                        "mouth",
-                        "teeth",
-                        "lips",
-                        "other (not mentioned above)"
-                    ], product ? product.hygiene.head : "");
-                    addSelect(hygieneGroup, "Kind", "product-hygiene-kind", [             
-                        "",
-                        "soap",
-                        "shampoo",
-                        "treatment",
-                        "cream/lotion",
-                        "sun screen",
-                        "anti-oil products",
-                        "anti-sweat/anti-smell",
-                        "sterilizer",
-                        "oral hygiene",
-                        "diapers",
-                        "menstruation products/panty liner",
-                        "urine pads",
-                        "other (not mentioned above)"
-                    ], product ? product.hygiene.kind : "");
-                    group.appendChild(hygieneGroup);
-                    let cleaningGroup = document.createElement("fieldset");
-                    let cleaningLegend = document.createElement("legend");
-                    cleaningLegend.innerText = "Cleaning";
-                    cleaningGroup.appendChild(cleaningLegend);
-                    addSelect(cleaningGroup, "Target", "product-cleaning-target", [             
-                        "",
-                        "house",
-                        "kitchen",
-                        "bathroom",
-                        "toilet",
-                        "outside",
-                        "clothes",
-                        "other (not mentioned above)"
-                    ], product ? product.cleaning.target : "");
-                    addSelect(cleaningGroup, "Function", "product-cleaning-function", [             
-                        "",
-                        "detergent",
-                        "fat/stains remover",
-                        "bleach",
-                        "clothes softener",
-                        "clothes hardener",
-                        "anti-odor/fragrance",
-                        "other (not mentioned above)"
-                    ], product ? product.cleaning.function : "");
-                    addSelect(cleaningGroup, "Form", "product-cleaning-form", [             
+                        "environment"
+                    ], getTarget(product));
+                    let subTarget = addSelect(group, " ", "product-subtarget", []);
+                    let subsubTarget = addSelect(group, " ", "product-subsubtarget", []);
+                    let productFuction = addSelect(group, "Function", "product-function");
+                    function syncSubTarget() {
+                        target = group.getElementsByClassName("product-target")[0];
+                        subTarget = group.getElementsByClassName("product-subtarget")[0];
+                        subTarget.innerText = "";
+                        if (target.value === "body") {
+                            subTarget.disabled = false;
+                            fillSelect(subTarget, [
+                                "",
+                                "body",
+                                "head",
+                                "neck",
+                                "shoulders",
+                                "hands",
+                                "arms",
+                                "armpits",
+                                "intimate area",
+                                "legs",
+                                "feet",
+                                "other (not mentioned above)"
+                            ]);
+                        }
+                        else if (target.value === "environment") {
+                            subTarget.disabled = false;
+                            fillSelect(subTarget, [
+                                "",
+                                "house",
+                                "kitchen",
+                                "bathroom",
+                                "toilet",
+                                "outside",
+                                "clothes",
+                                "other (not mentioned above)"
+                            ]);
+                        }
+                        else {
+                            subTarget.disabled = true;
+                        }
+                    }
+                    function syncSubSubTarget() {
+                        subTarget = group.getElementsByClassName("product-subtarget")[0];
+                        subSubTarget = group.getElementsByClassName("product-subsubtarget")[0];
+                        subSubTarget.innerText = "";
+                        if (subTarget.value === "head") {
+                            subSubTarget.disabled = false;
+                            fillSelect(subSubTarget, [
+                                "",
+                                "hair",
+                                "face",
+                                "eyebrows",
+                                "eyes",
+                                "ears",
+                                "mouth",
+                                "teeth",
+                                "lips",
+                                "other (not mentioned above)"
+                            ]);
+                        }
+                        else {
+                            subSubTarget.disabled = true;
+                        }
+                    }
+                    function syncFunction() {
+                        let target = group.getElementsByClassName("product-target")[0];
+                        let productFunction = group.getElementsByClassName("product-function")[0];
+                        productFunction.innerText = "";
+                        if (target.value === "body") {
+                            fillSelect(productFunction, [
+                                "",
+                                "soap",
+                                "shampoo",
+                                "treatment",
+                                "cream/lotion",
+                                "sun screen",
+                                "anti-oil products",
+                                "anti-sweat/anti-smell",
+                                "sterilizer",
+                                "oral hygiene",
+                                "diapers",
+                                "menstruation products/panty liner",
+                                "urine pads",
+                                "other (not mentioned above)"
+                            ]);
+                        }
+                        else if (target.value === "environment") {
+                            fillSelect(productFunction, [
+                                "",
+                                "detergent",
+                                "fat/stains remover",
+                                "bleach",
+                                "clothes softener",
+                                "clothes hardener",
+                                "anti-odor/fragrance",
+                                "other (not mentioned above)"
+                            ]);
+                        }
+                    }
+                    addSelect(group, "Form", "product-form", [             
                         "",
                         "beads",     
                         "cream",
@@ -718,10 +813,8 @@
                         "sheets",
                         "spray",
                         "other (not mentioned above)"
-                    ], product ? product.cleaning.form : "");
-                    group.appendChild(cleaningGroup);
-                    addText(group, "Product specific", "product-specific", product ? product["product-specific"] : "");
-                    addText(group, "Service specific", "service-specific", product ? product["service-specific"] : "");
+                    ], product ? getForm(product) : "");
+                    addText(group, "Specific", "product-specific", product ? product["product-specific"] || product["service-specific"] : "");
                     addSelect(group, "Target gender", "target-gender", [
                         "",
                         "Women",
@@ -740,33 +833,21 @@
                     ], product ? product["target-age"] : "");
                     products.appendChild(productContainer);
 
-                    function syncProducts() {
-                        let body = bodyPart.getElementsByTagName("select")[0];
-                        let head = headPart.getElementsByTagName("select")[0];
-                        if (body.value == "head") {
-                            head.disabled = false;
-                        }
-                        else {
-                            head.disabled = true;
-                            head.value = "";
-                        }
-                    }
-                    let body = bodyPart.getElementsByTagName("select")[0];
-                    body.addEventListener("change", ()=>{
-                        syncProducts();
+                    group.getElementsByClassName("product-target")[0].addEventListener("change", ()=>{
+                        syncSubTarget();
+                        syncSubSubTarget();
+                        syncFunction();
                     });
-                    syncProducts();
+                    group.getElementsByClassName("product-subtarget")[0].addEventListener("change", ()=>{
+                        syncSubSubTarget();
+                    });
 
-                    function syncGroups() {
-                        let kind = kindPart.getElementsByTagName("select")[0];
-                        hygieneGroup.disabled = kind.value != "personal hygiene product" && kind.value != "food/supplement";
-                        cleaningGroup.disabled = !hygieneGroup.disabled;
-                    }
-                    let kind = kindPart.getElementsByTagName("select")[0];
-                    kind.addEventListener("change", ()=>{
-                        syncGroups();
-                    });
-                    syncGroups();
+                    syncSubTarget();
+                    productContainer.getElementsByClassName("product-subtarget")[0].value = getSubTarget(product);
+                    syncSubSubTarget();
+                    productContainer.getElementsByClassName("product-subsubtarget")[0].value = getSubSubTarget(product);
+                    syncFunction();
+                    productContainer.getElementsByClassName("product-function")[0].value = getFunction(product);
                 }
                 let addProduct = document.getElementById("add-product");
                 addProduct.addEventListener("click", ()=>{
@@ -782,26 +863,20 @@
                 function getProduct(product) {
                     return {
                         kind: product.getElementsByClassName("product-kind")[0].value,
-                        hygiene: {
-                            body: product.getElementsByClassName("product-hygiene-body")[0].value,
-                            head: product.getElementsByClassName("product-hygiene-head")[0].value,
-                            kind: product.getElementsByClassName("product-hygiene-kind")[0].value,
-                        },
-                        cleaning: {
-                            target: product.getElementsByClassName("product-cleaning-target")[0].value,
-                            "function": product.getElementsByClassName("product-cleaning-function")[0].value,
-                            form: product.getElementsByClassName("product-cleaning-form")[0].value,
-                        },
+                        target: product.getElementsByClassName("product-target")[0].value,
+                        subtarget: product.getElementsByClassName("product-subtarget")[0].value,
+                        subsubtarget: product.getElementsByClassName("product-subsubtarget")[0].value,
+                        function: product.getElementsByClassName("product-function")[0].value,
+                        form: product.getElementsByClassName("product-form")[0].value,
                         "product-specific": product.getElementsByClassName("product-specific")[0].value,
-                        "service-specific": product.getElementsByClassName("service-specific")[0].value,
                         "target-gender": product.getElementsByClassName("target-gender")[0].value,
                         "target-age": product.getElementsByClassName("target-age")[0].value,
                     }
                 }
 
                 function getProducts() {
-                    let products = document.getElementById("product");
-                    productContainers = people.getElementsByTagName("productContainer");
+                    let products = document.getElementById("products");
+                    productContainers = products.getElementsByTagName("productContainer");
                     return Array.prototype.map.call(productContainers, product=>getProduct(product));
                 }
             </script>
@@ -853,6 +928,28 @@
                 }
             </script>
         </fieldset>
+        <fieldset style="margin-top: 20px;"><legend>Context</legend>
+            <ul id="topics">
+                <li><select name="category" id="root.newCategory">
+                        <option></option>
+                        <option>Cleaning event</option>
+                        <option>Cleanliness and health advice</option>
+                        <option>Cosmetics and supplements</option>
+                        <option>Technology and innovation</option>
+                        <option>Environment and sustainability</option>
+                        <option>Crime</option>
+                        <option>Law</option>
+                        <option>Habits and customs</option>
+                        <option>Disasters and accidents</option>
+                        <option>Foreign affairs</option>
+                        <option>Miscellaneous</option>
+                    </select>
+                </li>
+            </ul>
+            <script>
+                setSelectValue("root.newCategory", data.newCategory);
+            </script>
+        </fieldset>
     </ul>
     </fieldset>
     <fieldset style="margin-top: 20px;"><legend>General</legend>
@@ -863,6 +960,7 @@
                     <li><label for="text">Text</label> <textarea name="text" id="root.article.text"></textarea></li>
                     <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract"></textarea></li>
                     <li><label for="keywords">Keywords</label> <input name="keywords" id="root.article.keywords"/></li>
+                    <li><label for="keywords-thai">Keywords (Thai)</label> <input name="keywords-thai" id="root.article.keywords-thai"/></li>
                 </ul>
             </fieldset>
         </ul>
@@ -873,6 +971,7 @@
             setEditValue("root.article.text", data.article.text);
             setEditValue("root.article.abstract", data.article.abstract);
             setEditValue("root.article.keywords", data.article.keywords);
+            setEditValue("root.article.keywords-thai", data.article["keywords-thai"]);
         }
     </script>
     <button id="save">Save</button>
@@ -881,6 +980,7 @@
         let data = {
             id: getEditValue("root.id"),
             relevance: getEditValue("root.relevance"),
+            newCategory: getEditValue("root.newCategory"),
             bibliography: getBibliography(),
             categories: {
                 focus: getFocus(),
@@ -895,10 +995,11 @@
             article:{
                 text: getEditValue("root.article.text"),
                 abstract: getEditValue("root.article.abstract"),
-                keywords: getEditValue("root.article.keywords")
+                keywords: getEditValue("root.article.keywords"),
+                "keywords-thai": getEditValue("root.article.keywords-thai")
             }
         }
-        //alert(JSON.stringify(data,null,2));
+        console.log(JSON.stringify(data,null,2));
         //let container = document.getElementsByClassName("container")[0];
         //container.classList.add('loader');
         document.getElementById("save").disabled = true;
