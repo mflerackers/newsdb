@@ -33,8 +33,8 @@ mongodb.connect(`mongodb+srv://${process.env.MONGOUSER}:${process.env.MONGOPASSW
   }, (err, client) => {
   if (err) return console.log(err)
   db = client.db('thaidb')
-  app.listen(3000, () => {
-    console.log('listening on 3000')
+  app.listen(process.env.PORT, () => {
+    console.log(`listening on ${process.env.PORT}`)
   })
 })
 
