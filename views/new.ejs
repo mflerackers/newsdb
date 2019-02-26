@@ -456,7 +456,7 @@
                     data.categories.happenings.forEach(h=>appendHappening(h));
                 }
                 else if (data.categories && data.categories.happening) {
-                    appendHappening(data.categories.happening);
+                    data.categories.happening.forEach(h=>appendHappening(h));
                 }
 
                 function getHappening(happening) {
