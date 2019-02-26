@@ -117,7 +117,10 @@
         <li><label for="total">Total articles</label> <input name="total" id="root.bibliography.total"/></li>
         <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
         <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai"/></li>
-        <li><label for="newspaper">Newspaper</label> <input name="newspaper" id="root.bibliography.newspaper"/></li>
+        <li><label for="newspaper">Newspaper</label> <select name="newspaper" id="root.bibliography.newspaper">
+            <option>daily news</option>
+            <option>thai rath</option>
+        </select></li>
         <li><label for="date">Date</label> <input type="date" name="date" id="root.bibliography.date"/></li>
         <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication"/></li>
         <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
@@ -327,7 +330,7 @@
             }
             if (data.categories && data.categories.place) {
                 setEditValue("root.categories.place.geo", data.categories.place.geo);
-                let [country,province,district,city] = data.categories.place.geo.split(",");
+                let [country,province,district,city] = data.categories.place.geo ? data.categories.place.geo.split(",") : "";
                 setSelectValue("root.categories.place.geo.country", country);
                 setSelectValue("root.categories.place.geo.province", province);
                 syncDistricts();
@@ -437,11 +440,11 @@
                     let timeLegend = document.createElement("legend");
                     timeLegend.innerText = "Time";
                     timeGroup.appendChild(timeLegend);
-                    addSelect(timeGroup, "Season", "happening-time-season", ["", "Hot season", "Rainy season", "Cool season"], happening ? happening.time.season: "");
-                    addText(timeGroup, "Year", "happening-time-year", happening ? happening.time.year: "");
-                    addText(timeGroup, "Month", "happening-time-month", happening ? happening.time.month: "");
-                    addText(timeGroup, "Day", "happening-time-day", happening ? happening.time.day: "");
-                    addText(timeGroup, "Period", "happening-time-period", happening ? happening.time.period: "");
+                    addSelect(timeGroup, "Season", "happening-time-season", ["", "Hot season", "Rainy season", "Cool season"], happening && happening.time ? happening.time.season: "");
+                    addText(timeGroup, "Year", "happening-time-year", happening && happening.time ? happening.time.year: "");
+                    addText(timeGroup, "Month", "happening-time-month", happening && happening.time ? happening.time.month: "");
+                    addText(timeGroup, "Day", "happening-time-day", happening && happening.time ? happening.time.day: "");
+                    addText(timeGroup, "Period", "happening-time-period", happening && happening.time ? happening.time.period: "");
                     group.appendChild(timeGroup);
                     happenings.appendChild(happeningContainer);
                 }
@@ -929,7 +932,7 @@
             </script>
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Context</legend>
-            <ul id="topics">
+            <ul>
                 <li><select name="category" id="root.newCategory">
                         <option></option>
                         <option>Cleaning event</option>
