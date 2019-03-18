@@ -8,7 +8,7 @@
 <body>
     <%- include('header'); -%>
     <h1><%= title %></h1>
-    <div><%= articles.length %> results</div>
+    <div><%= articles.length %> results <button onclick="window.location+='?csv=1'">Export</button></div>
     <ul class="articles">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">

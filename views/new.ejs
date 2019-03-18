@@ -29,6 +29,10 @@
             flex: 1 0 220px;
             --max-width: 400px;
         }
+        .upload-field {
+            border: 1px solid silver;
+            border-radius: 4px;
+        }
     </style>
     <script src="/countries.js"></script>
     <script src="/thai_province_district.js"></script>
@@ -164,6 +168,89 @@
         </ul>
         </fieldset>
         <li><label for="file">File</label> <input name="file" id="root.bibliography.file"/></li>
+        <script>
+        uploadField = document.getElementById("root.bibliography.file");
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadField.addEventListener(eventName, (e)=>{
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName =>{
+            uploadField.addEventListener(eventName, (e)=>{
+                uploadField.style.backgroundColor = "red";
+                console.log(e);
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName =>{
+            uploadField.addEventListener(eventName, (e)=>{
+                uploadField.style.backgroundColor = "white";
+                console.log(e);
+            }, false);
+        });
+
+        uploadField.addEventListener("drop", (e)=>{
+            uploadField.style.backgroundColor = "white";
+            let files = e.dataTransfer.files;
+            files = [...files];
+            checkAuth(files);
+        });
+
+        function checkAuth(files) {
+            let url = "/isauth";
+            fetch(url, {
+                method: 'GET'
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((json) => {
+                console.log(json);
+                if (json.authUrl) {
+                    console.log("opening window");
+                    let popup = window.open(json.authUrl, "ThaiDB", "location=0,status=0,width=800,height=400");
+                    if (popup) {
+                        let timer = window.setInterval(()=>{
+                            if (popup.closed) {
+                                window.clearInterval(timer);
+                                /*
+                                    Check if logged in
+                                */
+                            }
+                        }, 1000);
+                    }
+                    else {
+                        /* Error. Inform the user */
+                    }
+                }
+                else {
+                    files.forEach(file=>{
+                        uploadFile(file);
+                    });
+                }
+            })
+            .catch(() => { /* Error. Inform the user */ })
+        }
+
+        function uploadFile(file) {
+            let url = "/training/upload";
+            let formData = new FormData()
+
+            formData.append('file', file)
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(() => {
+                uploadField.value = file.name;
+            })
+            .catch(() => { /* Error. Inform the user */ })
+        }
+        </script>
         <li><label for="photo">Photo</label>
             <select name="photo" id="root.bibliography.photo">
                 <option>yes</option>
