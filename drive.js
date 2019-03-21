@@ -5,50 +5,48 @@ const {google} = require('googleapis');
 const SCOPES = ['https://www.googleapis.com/auth/drive.metadata', 'https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = 'token.json';
 
-async function hasToken(clientId, clientSecret, redirectUri) {
-    return new Promise(function (resolve, reject) {
-        fs.readFile(TOKEN_PATH, async (err, token) => {
-            if (err) {
-                const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
-                const authUrl = oAuth2Client.generateAuthUrl({
-                    access_type: 'offline',
-                    scope: SCOPES,
-                });
-                resolve(authUrl);
-            }
-            else {
-                let oAuth2Client = await getAuth(clientId, clientSecret, redirectUri, token);
-                if (oAuth2Client.isTokenExpiring()) {
-                    const authUrl = oAuth2Client.generateAuthUrl({
-                        access_type: 'offline',
-                        scope: SCOPES,
-                    });
-                    resolve(authUrl);
-                }
-                else {
-                    resolve();
-                }
-            }
+function hasToken(clientId, clientSecret, redirectUri, token) {
+    if (token) {
+        const oAuth2Client = getAuth(clientId, clientSecret, redirectUri, token);
+        if (oAuth2Client.isTokenExpiring()) {
+            const authUrl = oAuth2Client.generateAuthUrl({
+                access_type: 'offline',
+                scope: SCOPES,
+            });
+            return authUrl;
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+        const authUrl = oAuth2Client.generateAuthUrl({
+            access_type: 'offline',
+            scope: SCOPES,
         });
-    });
+        return authUrl;
+    }
 }
 
 function authenticate(clientId, clientSecret, redirectUri, code, error) {
     const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
-    oAuth2Client.getToken(code, (err, token) => {
-        if (err) return console.error('Error retrieving access token', err);
-        //oAuth2Client.setCredentials(token);
-        fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-            if (err) console.error(err);
-            console.log(`Token stored to ${TOKEN_PATH}s`);
+    return new Promise(function(resolve, reject) {
+        oAuth2Client.getToken(code, (err, token)=>{
+            console.log(`getToken returned ${token} ${err}`);
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(token);
+            }
         });
     });
 }
 
-async function getAuth(clientId, clientSecret, redirectUri, oldToken) {
+function getAuth(clientId, clientSecret, redirectUri, token) {
   const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
-  let token = oldToken || fs.readFileSync(TOKEN_PATH);
-  oAuth2Client.setCredentials(JSON.parse(token));
+  oAuth2Client.setCredentials(token);
   return oAuth2Client;
 }
 
@@ -79,6 +77,30 @@ async function createFile(auth, name, mime, contents, parents) {
   return data;
 }
 
+async function updateFile(auth, fileId, contents) {
+    const drive = google.drive({version: 'v3', auth});
+    let data = await drive.files.update({
+        fileId: fileId,
+        media: {
+            mimeType: 'text/plain',
+            body: contents
+        }
+    });
+    return data;
+}
+
+async function createOrUpdateFile(auth, name, mime, contents, parents) {
+    let files = await listFiles(auth, `name='${name}'`);
+    if (!files || files.length == 0) {
+        let data = await createFile(auth, name, mime, contents, parents);
+        return data.data.id;
+    }
+    else {
+        let data = await updateFile(auth, files[0].id, contents);
+        return files[0].id;
+    }
+}
+
 async function createFolder(auth, name) {
   const drive = google.drive({version: 'v3', auth});
   let data = await drive.files.create({
@@ -91,16 +113,16 @@ async function createFolder(auth, name) {
   return data.id;
 }
 
-async function updateFile(auth, fileId, contents) {
-  const drive = google.drive({version: 'v3', auth});
-  let data = await drive.files.update({
-      fileId: fileId,
-      media: {
-          mimeType: 'text/plain',
-          body: contents
-      }
-  });
-  return data;
+async function getFolder(auth, name) {
+    let folders = await listFiles(auth, `name='${name}'`);
+    let id;
+    if (!folders || folders.length == 0) {
+        id = await createFolder(auth, name);
+    }
+    else {
+        id = folders[0].id;
+    }
+    return id;
 }
 
 module.exports = {
@@ -110,5 +132,7 @@ module.exports = {
     listFiles: listFiles,
     createFile: createFile,
     updateFile: updateFile,
-    createFolder: createFolder
+    createOrUpdateFile: createOrUpdateFile,
+    createFolder: createFolder,
+    getFolder: getFolder
 };

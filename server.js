@@ -163,19 +163,18 @@ function defineRoutes() {
     })
 
     app.get('/isauth', (req, res) => {
-        drive.hasToken(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI).then(function(authUrl){
-            res.send(authUrl ? {success:false, authUrl:authUrl} : {success:true});
-        })
-        .catch(function(err){
-            res.send({success:false, error:err});
-        });
+        console.log(`Token is ${req.session.authToken}`);
+        let authUrl = drive.hasToken(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, req.session.authToken)
+        console.log(authUrl);
+        res.send(authUrl !== true ? {success:false, authUrl:authUrl} : {success:true});
     });
 
-    app.get('/auth', (req, res) => {
+    app.get('/auth', async (req, res) => {
         let code = req.query.code;
         let error = req.query.error;
-        console.log(`auth ${code} ${error}`);
-        drive.authenticate(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, code, error);
+        console.log(`auth code: ${code} auth error: ${error}`);
+        let token = await drive.authenticate(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, code, error);
+        req.session.authToken = token;
         res.render('auth.ejs', {});
     });
 
@@ -188,23 +187,18 @@ function defineRoutes() {
             console.log('Fields', fields);
             console.log('Files', files);
 
-            let auth = await drive.getAuth(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI);
+            console.log(`using token ${JSON.stringify(req.session.authToken)}`);
+
+            let auth = drive.getAuth(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, req.session.authToken);
 
             console.log(`Got auth ${auth}`);
 
-            let folders = await drive.listFiles(auth, "name='Thai_uploads'");
-            let id;
-            if (!folders || folders.length == 0) {
-                id = await drive.createFolder(auth, 'Thai_uploads');
-            }
-            else {
-                id = folders[0].id;
-            }
+            let id = await drive.getFolder(auth, 'Thai_uploads');
             console.log(`Folder id is ${id}`);
             
-            drive.createFile(auth, files.file.name, 'application/pdf', fs.createReadStream(files.file.path), [id])
-            .then(data => {
-                console.log(`The file is saved to google ${JSON.stringify(data)}`);
+            drive.createOrUpdateFile(auth, files.file.name, 'application/pdf', fs.createReadStream(files.file.path), [id])
+            .then(id => {
+                console.log(`The file is saved to google ${JSON.stringify(id)}`);
                 res.send({success:true});
             })
             .catch(err => {
