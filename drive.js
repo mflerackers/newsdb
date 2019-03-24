@@ -72,7 +72,8 @@ async function createFile(auth, name, mime, contents, parents) {
       media: {
           mimeType: mime,
           body: contents
-      }
+      },
+      fields: 'id, name, webViewLink'
   });
   return data;
 }
@@ -84,7 +85,8 @@ async function updateFile(auth, fileId, mime, contents) {
         media: {
             mimeType: mime,
             body: contents
-        }
+        },
+        fields: 'id, name, webViewLink'
     });
     return data;
 }
@@ -96,12 +98,12 @@ async function createOrUpdateFile(auth, name, mime, contents, parents) {
     if (!files || files.length == 0) {
         let data = await createFile(auth, name, mime, contents, parents);
         console.log(`created ${JSON.stringify(data)}`);
-        return data.data.id;
+        return data.data;
     }
     else {
         let data = await updateFile(auth, files[0].id, mime, contents);
         console.log(`updated ${JSON.stringify(data)}`);
-        return files[0].id;
+        return data.data;
     }
 }
 

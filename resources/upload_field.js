@@ -6,7 +6,7 @@ class UploadField extends HTMLElement {
 
         let style = document.createElement('style');
 
-        style.textContent = `.label { border: 1px solid silver; border-radius: 5px; font-size: 14px; text-height:17px; padding: 4px; display: block; }`;
+        style.textContent = `.label { border: 1px solid silver; border-radius: 5px; font-size: 14px; line-height:17px; padding: 4px; display: block; }`;
         shadow.appendChild(style);
 
         let span = document.createElement("span");
@@ -74,7 +74,7 @@ class UploadField extends HTMLElement {
         })
         .then((json) => {
             console.log(json);
-            this.setAttribute("value", file.name);
+            this.setAttribute("value", json.data.webViewLink);
         })
         .catch(() => { /* Error. Inform the user */ })
     }
@@ -110,8 +110,24 @@ class UploadField extends HTMLElement {
         switch (name) {
             case "value":
             {
-                let span = this.shadowRoot.querySelector(".label");
-                span.innerText = newValue;
+                let shadow = this.shadowRoot;
+                let old = shadow.querySelector(".label");
+                shadow.removeChild(old);
+
+                if (newValue) {               
+                    let a = document.createElement("a");
+                    a.classList.add("label");
+                    a.innerText = newValue;
+                    a.href = newValue;
+                    a.target = "_blank";
+                    shadow.appendChild(a);
+                }
+                else {
+                    let span = document.createElement("span");
+                    span.classList.add("label");
+                    span.innerText = "Drop a file here";
+                    shadow.appendChild(span);
+                }
                 break;
             }
         }

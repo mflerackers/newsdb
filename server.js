@@ -197,9 +197,9 @@ function defineRoutes() {
             console.log(`Folder id is ${id}`);
             
             drive.createOrUpdateFile(auth, files.file.name, 'application/pdf', fs.createReadStream(files.file.path), [id])
-            .then(id => {
-                console.log(`The file is saved to google ${JSON.stringify(id)}`);
-                res.send({success:true, id:id});
+            .then(data => {
+                console.log(`The file is saved to google ${JSON.stringify(data)}`);
+                res.send({success:true, data:data});
             })
             .catch(err => {
                 console.error(`The file is not saved to google ${err}`);
