@@ -77,12 +77,12 @@ async function createFile(auth, name, mime, contents, parents) {
   return data;
 }
 
-async function updateFile(auth, fileId, contents) {
+async function updateFile(auth, fileId, mime, contents) {
     const drive = google.drive({version: 'v3', auth});
     let data = await drive.files.update({
         fileId: fileId,
         media: {
-            mimeType: 'text/plain',
+            mimeType: mime,
             body: contents
         }
     });
@@ -90,13 +90,17 @@ async function updateFile(auth, fileId, contents) {
 }
 
 async function createOrUpdateFile(auth, name, mime, contents, parents) {
-    let files = await listFiles(auth, `name='${name}'`);
+    let q = [`name='${name}'`, ...parents.map(p => `'${p}' in parents`)].join(" and ");
+    console.log(q);
+    let files = await listFiles(auth, q);
     if (!files || files.length == 0) {
         let data = await createFile(auth, name, mime, contents, parents);
+        console.log(`created ${JSON.stringify(data)}`);
         return data.data.id;
     }
     else {
-        let data = await updateFile(auth, files[0].id, contents);
+        let data = await updateFile(auth, files[0].id, mime, contents);
+        console.log(`updated ${JSON.stringify(data)}`);
         return files[0].id;
     }
 }
