@@ -1,36 +1,15 @@
 const stringify = require('csv-stringify')
+const jsep = require('jsep')
+const calcExpression = require('./expression').calcExpression;
 
-function getNameIndex(nameIndex) {
-    let start = nameIndex.indexOf("[");
-    if (start == -1) return [nameIndex, null];
-    let end = nameIndex.indexOf("]");
-    return [nameIndex.slice(0, start), +nameIndex.slice(start+1, end)];
-}
-
-// This would look prettier if slice was used instead of an index
-function lookUp(map, path, index=0) {
-    if (!map) {
-        return "NA";
+const cache = {};
+function expressionFromFormula(formula) {
+    let expression = cache[formula];
+    if (!expression) {
+        expression = jsep(formula);
+        cache[formula] = expression;
     }
-
-    let [name, i] = getNameIndex(path[index]);
-    let object;
-    if (i !== null) {
-        let array = map[name];
-        if (array && i < array.length) {
-            object = array[i];
-        }
-    }
-    else {
-        object = map[name];
-    }
-
-    if (index == path.length-1) {
-        return object || "NA";
-    }
-    else {
-        return lookUp(object, path, index+1);
-    }
+    return expression;
 }
 
 module.exports = function exportCsv(template, data, res) {
@@ -54,9 +33,10 @@ module.exports = function exportCsv(template, data, res) {
     });
 
     stringifier.write(Object.keys(template));
-    data.forEach(d=>{
-        stringifier.write(Object.values(template).map(path=>{
-            return lookUp(d, path.split("."));
+    data.forEach(env=>{
+        stringifier.write(Object.values(template).map(formula=>{
+            let expression = expressionFromFormula(formula);
+            return calcExpression(env, expression) || "NA";
         }));
     });
     stringifier.end();
