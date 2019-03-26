@@ -501,16 +501,25 @@ function defineRoutes() {
             let count = result.map(article => article.count);
             let statistics = { stdev: stats.stdevp(count), mean: stats.meanp(count), confidence:stats.confidence(0.05, stats.stdevp(count), count.length) };
             console.log(statistics);
-            res.render('count.ejs', {
-                articles:articles, 
-                count:count, 
-                attribute:req.params.name, 
-                title:`Count by ${req.params.name}`, 
-                statistics:statistics,
-                queryNames:queryNames,
-                fieldNames:fieldNames,
-                authenticated: true
-            });
+            let template = {
+                [req.params.name]: "name",
+                Count: "count"
+            };
+            if (req.query.csv) {
+                exportCsv(template, articles, res);
+            }
+            else {
+                res.render('count.ejs', {
+                    articles:articles, 
+                    count:count, 
+                    attribute:req.params.name, 
+                    title:`Count by ${req.params.name}`, 
+                    statistics:statistics,
+                    queryNames:queryNames,
+                    fieldNames:fieldNames,
+                    authenticated: true
+                });
+            }
         });
     })
 
