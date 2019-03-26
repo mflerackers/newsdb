@@ -40,9 +40,7 @@ class UploadField extends HTMLElement {
                     let timer = window.setInterval(()=>{
                         if (popup.closed) {
                             window.clearInterval(timer);
-                            /*
-                                Check if logged in
-                            */
+                            this.checkAuth(files);
                         }
                     }, 1000);
                 }
