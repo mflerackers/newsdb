@@ -210,6 +210,7 @@ function defineRoutes() {
         res.render('login.ejs', {
             title: "Login",
             username: "",
+            redirect: req.query.redirect,
             queryNames:queryNames,
             fieldNames:fieldNames,
             authenticated: isAuthenticated(req)
@@ -227,7 +228,7 @@ function defineRoutes() {
                             console.log(req.session);
                             req.session.userId = user._id;
                             req.session.admin = user.admin;
-                            return res.redirect('/training/list');
+                            return res.redirect(req.body.redirect || "/");
                         }
                         else {
                             // Password mismatch
@@ -249,9 +250,9 @@ function defineRoutes() {
     // Everything from hereon needs authentication
     app.use(function (req, res, next) {
         if (!isAuthenticated(req)) {
-            return res.redirect('/login');
+            return res.redirect(`/login?redirect=${encodeURIComponent(req.url)}`);
         }
-        next();    
+        next();
     });
 
     app.get('/logout', function(req, res) {
