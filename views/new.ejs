@@ -14,7 +14,7 @@
             padding: 5px;
             display: flex;
             flex-wrap: wrap;
-            align-items: center;
+            align-items: flex-start;
         }
         textarea {
             vertical-align: top;
@@ -37,6 +37,7 @@
     <script src="/countries.js"></script>
     <script src="/thai_province_district.js"></script>
     <script src="/upload_field.js"></script>
+    <script src="/select_other_field.js"></script>
 </head>
 <body>
     <%- include('header'); -%>
@@ -59,12 +60,19 @@
     function fillSelect(select, options, valueFor) {
         if (!options)
             return;
-        options.forEach(o=>{
-            let option = document.createElement("option");
-            option.value = valueFor ? valueFor(o) : o;
-            option.text = o;
-            select.appendChild(option);
-        });
+        if (select.tagName === "SELECT") {
+            options.forEach(o=>{
+                let option = document.createElement("option");
+                option.value = valueFor ? valueFor(o) : o;
+                option.text = o;
+                select.appendChild(option);
+            });
+        }
+        else {
+            console.log(select.tagName);
+            let values = valueFor ? options.map(o=>valueFor(o)) : options;
+            select.setOptions(values, options);
+        }
     }
     function addSelect(parent, labelText, name, options, value) {
         li = document.createElement("li");
@@ -79,7 +87,26 @@
         control.classList.add(name);
         fillSelect(control, options);
         if (value) {
-            control.selectedIndex = Array.prototype.findIndex.call(control.options, o=>o.value==value);
+            control.value = value;
+        }
+        li.appendChild(control);
+        parent.appendChild(li);
+        return li;
+    }
+    function addSelectOther(parent, labelText, name, options, value) {
+        li = document.createElement("li");
+        if (labelText) {
+            label = document.createElement("label");
+            label.setAttribute("for", name);
+            label.innerText = labelText;
+            li.appendChild(label);
+        }
+        control = document.createElement("select-other-field");
+        control.setAttribute("name", name);
+        control.classList.add(name);
+        fillSelect(control, options);
+        if (value) {
+            control.value = value;
         }
         li.appendChild(control);
         parent.appendChild(li);
@@ -95,7 +122,7 @@
         let select = document.getElementById(name);
         if (!select)
             return;
-        select.selectedIndex = Array.prototype.findIndex.call(select.options, o=>o.value==value);
+        select.value = value;
     }
     </script>
     <script>
@@ -650,7 +677,7 @@
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
-                    let kindPart = addSelect(group, "Kind", "product-kind", [
+                    let kindPart = addSelectOther(group, "Kind", "product-kind", [
                         "personal hygiene product",
                         "house cleaning detergent",
                         "food/supplement",
@@ -713,8 +740,8 @@
                         "body",
                         "environment"
                     ], getTarget(product));
-                    let subTarget = addSelect(group, " ", "product-subtarget", []);
-                    let subsubTarget = addSelect(group, " ", "product-subsubtarget", []);
+                    let subTarget = addSelectOther(group, " ", "product-subtarget", []);
+                    let subsubTarget = addSelectOther(group, " ", "product-subsubtarget", []);
                     let productFuction = addSelect(group, "Function", "product-function");
                     function syncSubTarget() {
                         target = group.getElementsByClassName("product-target")[0];
@@ -812,7 +839,7 @@
                             ]);
                         }
                     }
-                    addSelect(group, "Form", "product-form", [             
+                    addSelectOther(group, "Form", "product-form", [             
                         "",
                         "beads",     
                         "cream",
