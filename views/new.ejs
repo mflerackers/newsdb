@@ -16,9 +16,6 @@
             flex-wrap: wrap;
             align-items: flex-start;
         }
-        textarea {
-            vertical-align: top;
-        }
         label {
             flex: 1 0 100px;
             max-width: 140px;
@@ -38,6 +35,7 @@
     <script src="/thai_province_district.js"></script>
     <script src="/upload_field.js"></script>
     <script src="/select_other_field.js"></script>
+    <script src="/geo_field.js"></script>
 </head>
 <body>
     <%- include('header'); -%>
@@ -195,7 +193,7 @@
             </li>
         </ul>
         </fieldset>
-        <li><label for="file">File</label> <upload-field name="file" id="root.bibliography.file"/></li>
+        <li><label for="file">File</label> <input name="file" id="root.bibliography.file"/><!--<upload-field name="file" id="root.bibliography.file"/>--></li>
         <script>
         </script>
         <li><label for="photo">Photo</label>
@@ -468,7 +466,27 @@
                         "Geographical area",
                         "Other (not mentioned above)",
                     ], happening ? happening["external-factor"] : "");
-                    addText(group, "Place", "happening-place", happening ? happening.place: "");
+                    // Place geo
+                    let placeGroup = document.createElement("fieldset");
+                    let placeLegend = document.createElement("legend");
+                    placeLegend.innerText = "Place";
+                    placeGroup.appendChild(placeLegend);
+                    let place = document.createElement("geo-field");
+                    place.classList.add("happening-place");
+                    placeGroup.appendChild(place);
+                    group.appendChild(placeGroup);
+                    if (happening) {
+                        if (happening.place) {
+                            place.value = happening.place;
+                        }
+                        else {
+                            let geo = happening["place-geo"];
+                            place.country = geo.country;
+                            place.province = geo.province;
+                            place.district = geo.district;
+                            place.city = geo.city;
+                        }
+                    }
                     addText(group, "Place specific", "happening-place-specific", happening ? happening["place-specific"]: "");
                     let timeGroup = document.createElement("fieldset");
                     let timeLegend = document.createElement("legend");
@@ -494,10 +512,17 @@
                 }
 
                 function getHappening(happening) {
+                    let place = happening.getElementsByClassName("happening-place")[0];
                     return {
                         name: happening.getElementsByClassName("happening-name")[0].value,
                         "external-factor": happening.getElementsByClassName("happening-external-factor")[0].value,
-                        place: happening.getElementsByClassName("happening-place")[0].value,
+                        //place: happening.getElementsByClassName("happening-place")[0].value,
+                        "place-geo": {
+                            country: place.country,
+                            province: place.province,
+                            district: place.district,
+                            city: place.city
+                        },
                         "place-specific": happening.getElementsByClassName("happening-place-specific")[0].value,
                         time:{
                             season: happening.getElementsByClassName("happening-time-season")[0].value,
@@ -522,7 +547,9 @@
             <script>
                 function appendPerson(person) {
                     let people = document.getElementById("people");
+                    let personContainer = document.createElement("person");
                     let group = document.createElement("fieldset");
+                    personContainer.appendChild(group);
                     let legend = document.createElement("legend");
                     let button = document.createElement("button");
                     button.classList.add("delete");
@@ -534,7 +561,27 @@
                     group.appendChild(legend);
                     addText(group, "Name", "person-name", person ? person.name : "");
                     addSelect(group, "Density", "person-density", ["", "Central area", "Suburbs area", "Country side"], person ? person.density : "");
-                    addText(group, "Place", "person-place", person ? person.place : "");
+                    // Place geo
+                    let placeGroup = document.createElement("fieldset");
+                    let placeLegend = document.createElement("legend");
+                    placeLegend.innerText = "Place";
+                    placeGroup.appendChild(placeLegend);
+                    let place = document.createElement("geo-field");
+                    place.classList.add("person-place");
+                    placeGroup.appendChild(place);
+                    group.appendChild(placeGroup);
+                    if (person) {
+                        if (person.place) {
+                            place.value = person.place;
+                        }
+                        else {
+                            let geo = person["place-geo"];
+                            place.country = geo.country;
+                            place.province = geo.province;
+                            place.district = geo.district;
+                            place.city = geo.city;
+                        }
+                    }
                     addText(group, "Place specific", "person-place-specific", person ? person["place-specific"] : "");
                     addSelect(group, "Work type", "person-work-type", [
                         "", 
@@ -580,20 +627,33 @@
                         "Male",
                         "Undecided"
                     ], person ? person.gender : "");
+                    function translateAge(age) {
+                        let mapping = {
+                            "Infant":"Infant (0-2)",
+                            "Pre-school":"Pre-school (3-5)",
+                            "School age/teenager":"School age (6-14)",
+                            "Young adult":"College/young adult (15-24)",
+                            "Adult":"Adult (25-50)",
+                            "Older adult":"Pre-elderly (51-60)",
+                            "Elderly":"Elderly (60~)"
+                        };
+                        return mapping[age] || age;
+                    }
                     addSelect(group, "Age", "person-age", [
-                        "",      
-                        "Infant",
-                        "Pre-school",
-                        "School age/teenager",
-                        "Young adult",  
-                        "Adult",
-                        "Older adult",
-                        "Elderly"
-                    ], person ? person.age : "");
+                        "",
+                        "Infant (0-2)",
+                        "Pre-school (3-5)",
+                        "School age (6-14)",
+                        "College/young adult (15-24)",
+                        "Adult (25-50)",
+                        "Pre-elderly (51-60)",
+                        "Elderly (60~)",
+                        "Unspecified"
+                    ], person ? translateAge(person["person-age"]) : "");
                     addText(group, "Age specific", "person-age-specific", person ? person["age-specific"] : "");
                     addText(group, "Role", "person-role", person ? person.role : "");
                     addText(group, "Action", "person-action", person ? person.action : "");
-                    people.appendChild(group);
+                    people.appendChild(personContainer);
                 }
                 let addPerson = document.getElementById("add-person");
                 addPerson.addEventListener("click", ()=>{
@@ -604,10 +664,18 @@
                 }
 
                 function getPerson(person) {
+                    alert(person.getElementsByClassName("person-age")[0].value);
+                    let place = person.getElementsByClassName("person-place")[0];
                     return {
                         name: person.getElementsByClassName("person-name")[0].value,
                         density: person.getElementsByClassName("person-density")[0].value,
-                        place: person.getElementsByClassName("person-place")[0].value,
+                        //place: person.getElementsByClassName("person-place")[0].value,
+                        "place-geo": {
+                            country: place.country,
+                            province: place.province,
+                            district: place.district,
+                            city: place.city
+                        },
                         "place-specific": person.getElementsByClassName("person-place-specific")[0].value,
                         "work-type": person.getElementsByClassName("person-work-type")[0].value,
                         "education-level": person.getElementsByClassName("person-education-level")[0].value,
@@ -624,7 +692,7 @@
 
                 function getPeople() {
                     let people = document.getElementById("people");
-                    fieldsets = people.getElementsByTagName("fieldset");
+                    fieldsets = people.getElementsByTagName("person");
                     return Array.prototype.map.call(fieldsets, person=>getPerson(person));
                 }
             </script>    
@@ -858,16 +926,29 @@
                         "Men",
                         "Not gender specific"
                     ], product ? product["target-gender"] : "");
+                    function translateAge(age) {
+                        let mapping = {
+                            "Infant":"Infant (0-2)",
+                            "Pre-school":"Pre-school (3-5)",
+                            "School age/teenager":"School age (6-14)",
+                            "Young adult":"College/young adult (15-24)",
+                            "Adult":"Adult (25-50)",
+                            "Older adult":"Pre-elderly (51-60)",
+                            "Elderly":"Elderly (60~)"
+                        };
+                        return mapping[age] || age;
+                    }
                     addSelect(group, "Target age", "target-age", [
                         "",
-                        "Infant",
-                        "Pre-school",
-                        "School age/teenager",
-                        "Young adult",
-                        "Adult",
-                        "Older adult",
-                        "Elderly",
-                    ], product ? product["target-age"] : "");
+                        "Infant (0-2)",
+                        "Pre-school (3-5)",
+                        "School age (6-14)",
+                        "College/young adult (15-24)",
+                        "Adult (25-50)",
+                        "Pre-elderly (51-60)",
+                        "Elderly (60~)",
+                        "Unspecified"
+                    ], product ? translateAge(product["target-age"]) : "");
                     products.appendChild(productContainer);
 
                     group.getElementsByClassName("product-target")[0].addEventListener("change", ()=>{
