@@ -8,7 +8,7 @@
 <body>
     <%- include('header'); -%>
     <h1><%- title %></h1>
-    <div><%= articles.length %> results | mean: <%= statistics.mean %> | stdev: <%= statistics.stdev %> | confidence interval: [<%= statistics.mean-statistics.confidence %>, <%= statistics.mean+statistics.confidence %>]</div>
+    <div><%= articles.length %> results <button onclick="window.location+='?csv=1'">Export</button> | mean: <%= statistics.mean.toFixed(4) %> | stdev: <%= statistics.stdev.toFixed(4) %> | confidence interval: [<%= (statistics.mean-statistics.confidence).toFixed(4) %>, <%= (statistics.mean+statistics.confidence).toFixed(4) %>]</div>
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
