@@ -10,6 +10,7 @@
   "dependencies": {
     "bcrypt": "3.0.4",
     "body-parser": "1.18.3",
+    "connect-mongo": "2.0.3",
     "csv": "5.1.1",
     "dotenv": "^6.2.0",
     "ejs": "2.6.1",
@@ -20,9 +21,9 @@
     "jsep": "0.3.4",
     "json": "9.0.6",
     "mongodb": "3.1.13",
-    "connect-mongo": "2.0.3",
     "nodemon": "^1.18.10",
-    "npm": "^6.8.0"
+    "npm": "^6.8.0",
+    "nodemailer": "6.0.0"
   },
   "author": "",
   "license": "ISC"

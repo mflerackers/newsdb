@@ -6,7 +6,8 @@ const stats = require("./stats")                                // Statistics
 const fieldNames = require("./field_names")                     // Query settings
 const bcrypt = require('bcrypt');                               // Password encryption
 const ExpressSession = require('express-session');              // Sessions
-const MongoStore = require('connect-mongo')(ExpressSession);   // MongoDB backed sessions
+const nodemailer = require('nodemailer');                       // Mail sender
+const MongoStore = require('connect-mongo')(ExpressSession);    // MongoDB backed sessions
 const formidable = require('formidable');                       // File upload
 const {google} = require('googleapis');                         // Google drive upload
 const fs = require('fs');                                       // File upload
@@ -14,6 +15,14 @@ const exportCsv = require("./csv_export");
 const drive = require("./drive");
 
 require('dotenv').load();
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAIL_ADDRESS,
+        pass: process.env.MAIL_PASSWORD
+    }
+});
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -54,6 +63,15 @@ async function connect() {
         resave: false,
         store: store
     }));
+
+    try {
+        const reset = require('./routes/reset_router').getRouter(db, transporter);
+        app.use('/reset', reset);
+        console.log("reset route installed");
+    }
+    catch (err) {
+        console.log(err);
+    }
 
     defineRoutes();
 
@@ -211,8 +229,6 @@ function defineRoutes() {
             title: "Login",
             username: "",
             redirect: req.query.redirect,
-            queryNames:queryNames,
-            fieldNames:fieldNames,
             authenticated: isAuthenticated(req)
         });
     })

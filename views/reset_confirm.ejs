@@ -34,16 +34,17 @@
 <body>
     <%- include('header'); -%>
     <div class="container">
-    <form method="post" action="/login">
-    <fieldset style="margin-top: 20px;"><legend>Login</legend>
+    <form method="post" action="/reset/password" onsubmit="return validateForm(this)">
+    <fieldset style="margin-top: 20px;"><legend>Reset password</legend>
     <ul>
-        <li><label for="username">Username</label> <input name="username" value="<%- username %>"/></li>
-        <li><label for="password">Password</label> <input name="password" type="password"/></li>
-        <input name="redirect" type="hidden" value="<%= locals.redirect || '/' %>"/>
-        <li><input type="submit" value="Login"/> <a href="/reset">Forgot your password?</a></li>
+        <li><label for="password">New password</label> <input type="password" name="password" required></li>
+        <li><label for="passwordRepeat">New password once more</label> <input type="password" name="passwordRepeat" required></li>
+        <input type="hidden" name="token" value="<%- token %>">
+        <li><input type="submit" value="Reset"></li>
     </ul>
     </fieldset>
     </form>
     </div>
+    <script>function validateForm(form) { return form.elements['password'].value === form.elements['passwordRepeat'].value; }</script>
 </body>
 </html>

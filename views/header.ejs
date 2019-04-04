@@ -1,5 +1,6 @@
 <div class="header" style="background-color: lightblue; padding: 5px; margin:-8px;">
     <div class="query-block">
+        <% if (locals.queryNames && locals.fieldNames) { %>
         <label for="query">query </label>
         <select id="query" name="query">
             <% for(var i=0; i<queryNames.length; i++) {  %>
@@ -21,9 +22,10 @@
         <span id="value1-block">/ <input type="text" id="value1" name="value1"/></span>
         <span id="value2-block">/ <input type="text" id="value2" name="value2"/></span>
         <button id="go">Go</button>
+        <% } %>
     </div>
     <div class="login-block">
-    <% if (authenticated) { %>
+    <% if (locals.authenticated) { %>
         <button onclick="window.location='/logout'">Logout</button>
     <% } else { %>
         <button onclick="window.location='/login'">Login</button>
