@@ -368,7 +368,8 @@ function defineRoutes() {
                     place:{
                         geo:"thailand,bangkok,,"
                     }
-                }
+                },
+                collection: "training"
             },
             queryNames:queryNames,
             fieldNames:fieldNames,
@@ -383,7 +384,8 @@ function defineRoutes() {
                 data:result,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
-                authenticated: true
+                authenticated: true,
+                collection: "training"
             });
         });
     });
@@ -426,6 +428,10 @@ function defineRoutes() {
             if (err) return console.log(err);
             res.send(result);
         });
+    })
+
+    app.get('/list', function(req, res) {
+        res.redirect('/')
     })
 
     app.get('/list/:name', function(req, res) {
@@ -741,6 +747,24 @@ function defineRoutes() {
                 mapboxAccessToken:process.env.MAPTOKEN
             });
             //res.status(200).send(result);
+        });
+    });
+
+    app.post('/save', function(req, res) {
+        let json = req.body;
+        json.userId = req.session.userId;
+        console.log(json);
+        //response.send(req.body);
+        
+        db.collection("thaidb").updateOne({id:json.id}, {$set:json}, { upsert: true }, function(err, result) {
+            if (err) {
+                res.status(200).send({success:false});
+                console.log("error", err);
+            }
+            else {
+                res.status(200).send({success:true});
+                console.log(json.id + " document updated");
+            }
         });
     });
 

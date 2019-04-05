@@ -664,7 +664,7 @@
                 }
 
                 function getPerson(person) {
-                    alert(person.getElementsByClassName("person-age")[0].value);
+                    //alert(person.getElementsByClassName("person-age")[0].value);
                     let place = person.getElementsByClassName("person-place")[0];
                     return {
                         name: person.getElementsByClassName("person-name")[0].value,
@@ -1121,7 +1121,8 @@
         //let container = document.getElementsByClassName("container")[0];
         //container.classList.add('loader');
         document.getElementById("save").disabled = true;
-        fetch("/training/save", {
+        const prefix = "<%- locals.collection ? `/${collection}` : "" %>";
+        fetch(`${prefix}/save`, {
             method: 'POST', // or 'PUT'
             body: JSON.stringify(data),
             headers:{
@@ -1132,7 +1133,7 @@
             //container.classList.remove('loader');
             document.getElementById("save").disabled = false;
             console.log('Success:', JSON.stringify(response));
-            window.location = "/training/list";
+            window.location = `${prefix}/list`;
         })
         .catch(error => {
             //container.classList.remove('loader');
