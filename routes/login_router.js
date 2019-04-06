@@ -25,7 +25,7 @@ function getRouter(db, transporter) {
                             console.log(req.session)
                             req.session.userId = user._id
                             req.session.admin = user.admin
-                            return res.redirect(req.body.redirect || "/")
+                            return res.redirect((req.body.redirect !== "/logout" ? req.body.redirect : "") || "/")
                         }
                         else {
                             // Password mismatch
