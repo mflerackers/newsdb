@@ -37,7 +37,7 @@
     <form method="post" action="/login">
     <fieldset style="margin-top: 20px;"><legend>Login</legend>
     <ul>
-        <li><label for="username">Username</label> <input name="username" value="<%- username %>"/></li>
+        <li><label for="email">Email</label> <input name="email" value="<%- email %>"/></li>
         <li><label for="password">Password</label> <input name="password" type="password"/></li>
         <input name="redirect" type="hidden" value="<%= locals.redirect || '/' %>"/>
         <li><input type="submit" value="Login"/> <a href="/reset">Forgot your password?</a></li>

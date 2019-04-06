@@ -73,6 +73,15 @@ async function connect() {
         console.log(err);
     }
 
+    try {
+        const login = require('./routes/login_router').getRouter(db, transporter);
+        app.use('/login', login);
+        console.log("login route installed");
+    }
+    catch (err) {
+        console.log(err);
+    }
+
     defineRoutes();
 
     app.listen(process.env.PORT, () => {
@@ -224,45 +233,6 @@ function isAdmin(req) {
 
 function defineRoutes() {
 
-    app.get('/login', function(req, res) {
-        res.render('login.ejs', {
-            title: "Login",
-            username: "",
-            redirect: req.query.redirect,
-            authenticated: isAuthenticated(req)
-        });
-    })
-
-    app.post('/login', function(req, res) {
-        if (req.body.username && req.body.password) {
-            db.collection('users').findOne({username:req.body.username}, (err, user) => {
-                if (err) return console.log(err);
-                if (user) {
-                    bcrypt.compare(req.body.password, user.password, (err, result) => {
-                        console.log(result)
-                        if (result === true) {
-                            console.log(req.session);
-                            req.session.userId = user._id;
-                            req.session.admin = user.admin;
-                            return res.redirect(req.body.redirect || "/");
-                        }
-                        else {
-                            // Password mismatch
-                            return res.redirect('/login');
-                        }
-                    });
-                }
-                else {
-                    // User not found
-                    return res.redirect('/login');
-                }
-            });
-        }
-        else {
-            return res.redirect('/login');
-        }
-    })
-
     // Everything from hereon needs authentication
     app.use(function (req, res, next) {
         if (!isAuthenticated(req)) {
@@ -276,7 +246,7 @@ function defineRoutes() {
             if (err) return console.log(err);
             res.render('login.ejs', {
                 title: "Login",
-                username: "",
+                email: "",
                 queryNames:queryNames,
                 fieldNames:fieldNames,
                 authenticated: true
