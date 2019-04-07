@@ -82,6 +82,8 @@ async function connect() {
         console.log(err);
     }
 
+    fetchDefinitions(db);
+
     defineRoutes();
 
     app.listen(process.env.PORT, () => {
@@ -111,117 +113,16 @@ const queryNames = [
     "training/list"
 ];
 
-const csvTemplate = {
-    ID: "id",
-    Relevance: "relevance",
-    Headline: "bibliography.headline",
-    Newspaper: "bibliography.newspaper",
-    Date: "bibliography.date",
-    PublicationNumber: "bibliography.publication",
-    PageNumber: "bibliography.page",
-    PageLocation: "bibliography.location",
-    HeadlineSize: "bibliography.size.headline",
-    ColInch: "bibliography.size.col-inch",
-    ArticleSize: "bibliography.size.article",
-    Link: "bibliography.size.file",
-    Photograph: "bibliography.photo",
-    NewsType: "bibliography.type",
-    NewsTopic: "categories.focus.topic",
-    GeoLevel: "categories.focus.level",
-    GeoMainName: "categories.place.geo",
-    Longitude: "categories.place.longitude",
-    Latitude: "categories.place.latitude",
-    InOrOutdoor: "categories.place.type",
-    PublicOrPrivate: "categories.place.space",
-    CentralOrSuburb: "categories.place.density",
-    GeoSubName: "categories.place.specific",
-    Cat1: "categories.happenings[0] ? 'Applicable' : 'Not Applicable'",
-    Cat1_ShortAbstract: "categories.happenings[0].name",
-    Cat1_ExternalFactor: "categories.happenings[0].external-factor",
-    Cat1_GeoNameCity: "categories.happenings[0].place",
-    Cat1_GeoNamePlaceSpecific: "categories.happenings[0].place-specific",
-    Cat1_Season: "categories.happenings[0].time.season",
-    Cat1_Year: "categories.happenings[0].time.year",
-    Cat1_Month: "categories.happenings[0].time.month",
-    Cat1_Day: "categories.happenings[0].time.day",
-    Cat1_Period: "categories.happenings[0].time.period",
-    Cat2: "categories.happenings[1] ? 'Applicable' : 'Not Applicable'",
-    Cat2_ShortAbstract: "categories.happenings[1].name",
-    Cat2_ExternalFactor: "categories.happenings[1].external-factor",
-    Cat2_GeoNameCity: "categories.happenings[1].place",
-    Cat2_GeoNamePlaceSpecific: "categories.happenings[1].place-specific",
-    Cat2_Season: "categories.happenings[1].time.season",
-    Cat2_Year: "categories.happenings[1].time.year",
-    Cat2_Month: "categories.happenings[1].time.month",
-    Cat2_Day: "categories.happenings[1].time.day",
-    Cat2_Period: "categories.happenings[1].time.period",
-    PeopleCategory: "categories.people[0] ? 'Applicable' : 'Not Applicable'",
-    Pers1_Name: "categories.people[0].name",
-    Pers1_CentralOrSuburb: "categories.people[0].density",
-    Pers1_GeoNameCity: "categories.people[0].place",
-    Pers1_GeoNamePlaceSpecific: "categories.people[0].place-specific",
-    Pers1_WorkType: "categories.people[0].work-type",
-    Pers1_EducationLevel: "categories.people[0].education-level",
-    Pers1_FieldOfExpertise: "categories.people[0].field",
-    Pers1_WorkSpecific: "categories.people[0].work-specific",
-    Pers1_Company: "categories.people[0].company",
-    Pers1_Gender: "categories.people[0].gender",
-    Pers1_Age: "categories.people[0].age",
-    Pers1_AgeSpecific: "categories.people[0].age-specific",
-    Pers1_Role: "categories.people[0].role",
-    Pers1_Action: "categories.people[0].action",
-    Pers2_Name: "categories.people[1].name",
-    Pers2_CentralOrSuburb: "categories.people[1].density",
-    Pers2_GeoNameCity: "categories.people[1].place",
-    Pers2_GeoNamePlaceSpecific: "categories.people[1].place-specific",
-    Pers2_WorkType: "categories.people[1].work-type",
-    Pers2_EducationLevel: "categories.people[1].education-level",
-    Pers2_FieldOfExpertise: "categories.people[1].field",
-    Pers2_WorkSpecific: "categories.people[1].work-specific",
-    Pers2_Company: "categories.people[1].company",
-    Pers2_Gender: "categories.people[1].gender",
-    Pers2_Age: "categories.people[1].age",
-    Pers2_AgeSpecific: "categories.people[1].age-specific",
-    Pers2_Role: "categories.people[1].role",
-    Pers2_Action: "categories.people[1].action",
-    Pers3_Name: "categories.people[2].name",
-    Pers3_CentralOrSuburb: "categories.people[2].density",
-    Pers3_GeoNameCity: "categories.people[2].place",
-    Pers3_GeoNamePlaceSpecific: "categories.people[2].place-specific",
-    Pers3_WorkType: "categories.people[2].work-type",
-    Pers3_EducationLevel: "categories.people[2].education-level",
-    Pers3_FieldOfExpertise: "categories.people[2].field",
-    Pers3_WorkSpecific: "categories.people[2].work-specific",
-    Pers3_Company: "categories.people[2].company",
-    Pers3_Gender: "categories.people[2].gender",
-    Pers3_Age: "categories.people[2].age",
-    Pers3_AgeSpecific: "categories.people[2].age-specific",
-    Pers3_Role: "categories.people[2].role",
-    Pers3_Action: "categories.people[2].action",
-    OrganizationsCategory: "categories.organizations[0] ? 'Applicable' : 'Not Applicable'",
-    Organization1: "categories.organizations[0].name",
-    Organization2: "categories.organizations[1].name",
-    Organization3: "categories.organizations[2].name",
-    ProductCategory: "categories.products[0] ? 'Applicable' : 'Not Applicable'",
-    ProductKind: "categories.products[0].kind",
-    Personal_head: "categories.products[0].target",
-    Personal_Body: "categories.products[0].target",
-    Personal_ProductKind: "categories.products[0].kind",
-    Cleaning_InHouse: "categories.products[0].kind",
-    "unknown-column": "categories.products[0]",
-    DetergentFunction: "categories.products[0].function",
-    DetergentForm: "categories.products[0].form",
-    Product_Specific: "categories.products[0].specific",
-    Target_gender: "categories.products[0].target-gender",
-    Target_age: "categories.products[0].target-age",
-    Topic1: "categories.topics[0]",
-    Topic2: "categories.topics[1]",
-    Topic3: "categories.topics[2]",
-    Comments: "comments",
-    Text: "article.text",
-    Abstract: "article.abstract",
-    Keywords: "article.keywords",
-};
+const definitions = {}
+
+function fetchDefinitions(db) {
+    db.collection('definitions').find({}).toArray((err, result) => {
+        if (err) return console.log(err);
+        result.forEach(definition=>{
+            definitions[definition.name] = definition;
+        });
+    });
+}
 
 function isAuthenticated(req) {
     return req.session && req.session.userId ? true : false;
@@ -365,7 +266,7 @@ function defineRoutes() {
         db.collection('trainingdb').find(req.session.admin ? {} : {userId: req.session.userId}).toArray((err, result) => {
             if (err) return console.log(err);
             if (req.query.csv) {
-                exportCsv(csvTemplate, result, res);
+                exportCsv(definitions.trainingdb.templates.csv.default, result, res);
             }
             else {
                 res.render('traininglist.ejs', {
@@ -383,13 +284,19 @@ function defineRoutes() {
     app.get('/', function(req, res) {
         db.collection('thaidb').find().toArray((err, result) => {
             if (err) return console.log(err);
-            res.render('index.ejs', {
-                articles:result, 
-                title:"All",
-                queryNames:queryNames,
-                fieldNames:fieldNames,
-                authenticated: true
-            });
+            if (req.query.csv) {
+                console.log(definitions.thaidb.templates.csv.default)
+                exportCsv(definitions.thaidb.templates.csv.default, result, res);
+            }
+            else {
+                res.render('index.ejs', {
+                    articles:result, 
+                    title:"All",
+                    queryNames:queryNames,
+                    fieldNames:fieldNames,
+                    authenticated: true
+                });
+            }
         });
     })
 
@@ -440,7 +347,7 @@ function defineRoutes() {
             if (err) return console.log(err);
             result = result.filter(article => article && article._id != "");
             if (req.query.csv) {
-                exportCsv(csvTemplate, result, res);
+                exportCsv(definitions.thaidb.templates.csv.default, result, res);
             }
             else {
                 res.render('index.ejs', {
