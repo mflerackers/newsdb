@@ -555,7 +555,7 @@
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
                     button.addEventListener("click", ()=>{
-                        people.removeChild(group);
+                        people.removeChild(personContainer);
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
@@ -869,6 +869,7 @@
                             ]);
                         }
                         else {
+                            subSubTarget.value = "";
                             subSubTarget.disabled = true;
                         }
                     }
@@ -961,11 +962,11 @@
                     });
 
                     syncSubTarget();
-                    productContainer.getElementsByClassName("product-subtarget")[0].value = getSubTarget(product);
+                    productContainer.getElementsByClassName("product-subtarget")[0].value = product ? getSubTarget(product) : ""
                     syncSubSubTarget();
-                    productContainer.getElementsByClassName("product-subsubtarget")[0].value = getSubSubTarget(product);
+                    productContainer.getElementsByClassName("product-subsubtarget")[0].value = product ? getSubSubTarget(product) : ""
                     syncFunction();
-                    productContainer.getElementsByClassName("product-function")[0].value = getFunction(product);
+                    productContainer.getElementsByClassName("product-function")[0].value = product ? getFunction(product) : ""
                 }
                 let addProduct = document.getElementById("add-product");
                 addProduct.addEventListener("click", ()=>{
