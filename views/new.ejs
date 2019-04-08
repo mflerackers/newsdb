@@ -1122,7 +1122,7 @@
         //let container = document.getElementsByClassName("container")[0];
         //container.classList.add('loader');
         document.getElementById("save").disabled = true;
-        const prefix = "<%- locals.collection ? `/${collection}` : "" %>";
+        const prefix = "<%- locals.name ? `/db/${name}` : "" %>";
         fetch(`${prefix}/save`, {
             method: 'POST', // or 'PUT'
             body: JSON.stringify(data),

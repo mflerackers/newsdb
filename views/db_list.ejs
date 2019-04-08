@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : <%- title %></title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="/scripts.js"></script>
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1><%- title %></h1>
+    <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button></div>
+    <ul class="articles">
+        <li class="article">
+            <a href="/db/<%- name %>/new">
+            <span>Create new</span>
+            </a>
+        </li>
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">
+            <button class="delete" onclick="{
+                if (window.confirm('Are you sure you want to delete <%=articles[i].id%>')) {
+                    window.location='/db/<%- name %>/delete/<%= encodeURIComponent(articles[i].id) %>';
+                }
+            }">&times;</button>
+            <a href="/db/<%- name %>/edit/<%= encodeURIComponent(articles[i].id) %>">
+            <span><%= articles[i].id %></span>
+            </a>
+            <%= articles[i].bibliography.headline %><br>
+            <span style="color:silver"><%= articles[i].article.abstract %></span>
+        </li>
+        <% } %>
+    </ul>
+</body>
+</html>

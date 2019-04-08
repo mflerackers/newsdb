@@ -82,6 +82,15 @@ async function connect() {
         console.log(err);
     }
 
+    try {
+        const dbRouter = require('./routes/db_router').getRouter(db, definitions, queryNames, fieldNames);
+        app.use('/db', dbRouter);
+        console.log("db route installed");
+    }
+    catch (err) {
+        console.log(err);
+    }
+
     fetchDefinitions(db);
 
     defineRoutes();
@@ -234,13 +243,13 @@ function defineRoutes() {
 
     app.get('/training/new', function(req, res) {
         res.render('new.ejs', {
+            name: "trainingdb",
             data:{
                 categories:{
                     place:{
                         geo:"thailand,bangkok,,"
                     }
-                },
-                collection: "training"
+                }
             },
             queryNames:queryNames,
             fieldNames:fieldNames,
