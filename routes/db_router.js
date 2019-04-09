@@ -54,11 +54,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
         db.collection(req.params.name).deleteOne({id:req.params.id, userId:req.session.userId}, function(err, result) {
             if (err) {
                 console.log(err)
-                return res.redirect('/training/list')
+                return res.redirect(`/db/${req.params.name}/list`)
             }
             else {
                 console.log(req.params.id + " document deleted")
-                return res.redirect('/training/list')
+                return res.redirect(`/db/${req.params.name}/list`)
             }
         });
     });
@@ -76,7 +76,7 @@ function getRouter(db, collections, queryNames, fieldNames) {
 
         // Show empty form
         res.render('new.ejs', {
-            name: eq.params.name,
+            name: req.params.name,
             data:{
                 categories:{
                     place:{
@@ -113,8 +113,7 @@ function getRouter(db, collections, queryNames, fieldNames) {
                 data:result,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
-                authenticated: true,
-                collection: "training"
+                authenticated: true
             });
         });
     });
@@ -140,7 +139,7 @@ function getRouter(db, collections, queryNames, fieldNames) {
             }
             else {
                 res.render('db_list.ejs', {
-                    title: "Training data",
+                    title: `collection: ${req.params.name}`,
                     name: req.params.name,
                     articles:result,
                     queryNames:queryNames,
