@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="/scripts.js"></script>
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1>Accessible collections</h1>
+    <div><%= articles.length %> results</div>
+    <ul class="articles">
+        <% for(var i=0; i<articles.length; i++) {%>
+        <li class="article">📁
+            <a href="/db/<%- articles[i].name %>/list %>">
+            <span><%= articles[i].name %></span>
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</body>
+</html>

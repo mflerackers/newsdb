@@ -11,6 +11,15 @@ function getRouter(db, definitions, queryNames, fieldNames) {
         next();
     });
 
+    router.get('/', function(req, res) {
+        // Show list
+        res.render('db.ejs', {
+            name: req.params.name,
+            articles: Object.values(definitions).filter(def=>def.users.includes(req.session.userId)),
+            authenticated: true
+        })
+    })
+
     router.post('/:name/save', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
