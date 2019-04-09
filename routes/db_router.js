@@ -1,6 +1,7 @@
 const express = require('express')                              // Webserver
 
-function getRouter(db, collections, queryNames, fieldNames) {
+function getRouter(db, definitions, queryNames, fieldNames) {
+    const exportCsv = require("./../csv_export");
     let router = express.Router()
 
     router.use(function (req, res, next) {
@@ -11,11 +12,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
     });
 
     router.post('/:name/save', function(req, res) {
-        if (!(req.params.name in collections)) {
+        if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
             return
         }
-        let collection = collections[req.params.name]
+        let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
             return
@@ -40,11 +41,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
     })
 
     router.get('/:name/delete/:id', function(req, res) {
-        if (!(req.params.name in collections)) {
+        if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
             return
         }
-        let collection = collections[req.params.name]
+        let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
             return
@@ -64,11 +65,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
     });
 
     router.get('/:name/new', function(req, res) {
-        if (!(req.params.name in collections)) {
+        if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
             return
         }
-        let collection = collections[req.params.name]
+        let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
             return
@@ -82,8 +83,7 @@ function getRouter(db, collections, queryNames, fieldNames) {
                     place:{
                         geo:"thailand,bangkok,,"
                     }
-                },
-                collection: "training"
+                }
             },
             queryNames:queryNames,
             fieldNames:fieldNames,
@@ -92,11 +92,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
     })
 
     router.get('/:name/edit/:id', function(req, res) {
-        if (!(req.params.name in collections)) {
+        if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
             return
         }
-        let collection = collections[req.params.name]
+        let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
             return
@@ -119,11 +119,11 @@ function getRouter(db, collections, queryNames, fieldNames) {
     });
 
     router.get('/:name/list', function(req, res) {
-        if (!(req.params.name in collections)) {
+        if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
             return
         }
-        let collection = collections[req.params.name]
+        let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
             return
