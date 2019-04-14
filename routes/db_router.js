@@ -1,6 +1,9 @@
 const express = require('express')                              // Webserver
+const formidable = require('formidable');                       // File upload
+const fs = require('fs');                                       // File upload
+const drive = require("./../drive");                            // Google drive
 
-function getRouter(db, definitions, queryNames, fieldNames) {
+function getRouter(db, definitions, queryNames, fieldNames, process) {
     const exportCsv = require("./../csv_export");
     let router = express.Router()
 
@@ -157,6 +160,46 @@ function getRouter(db, definitions, queryNames, fieldNames) {
                 });
             }
         });
+    });
+
+    router.post('/:name/upload', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        new formidable.IncomingForm().parse(req, async (err, fields, files) => {
+            if (err) {
+                console.error('Error', err)
+                throw err
+            }
+            console.log('Fields', fields);
+            console.log('Files', files);
+
+            console.log(`using token ${JSON.stringify(req.session.authToken)}`);
+
+            let auth = drive.getAuth(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, req.session.authToken);
+
+            console.log(`Got auth ${auth}`);
+
+            let id = await drive.getFolder(auth, collection.drive.folder);
+            console.log(`Folder id is ${id}`);
+            
+            drive.createOrUpdateFile(auth, files.file.name, files.file.type, fs.createReadStream(files.file.path), [id])
+            .then(data => {
+                console.log(`The file is saved to google ${JSON.stringify(data)}`);
+                res.send({success:true, data:data});
+            })
+            .catch(err => {
+                console.error(`The file is not saved to google ${err}`);
+                res.send({success:false});
+            })
+        })
     });
 
     return router

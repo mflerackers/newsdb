@@ -40,14 +40,14 @@
 <body>
     <%- include('header'); -%>
     <script>
-    function addText(parent, labelText, name, value) {
+    function addText(parent, labelText, name, value, type) {
         let li = document.createElement("li");
         let label = document.createElement("label");
         label.setAttribute("for", name);
         label.innerText = labelText;
         li.appendChild(label);
         let control = document.createElement("input");
-        control.setAttribute("type", "text");
+        control.setAttribute("type", type || "text");
         control.setAttribute("name", name);
         control.classList.add(name);
         control.value = value || "";
@@ -144,7 +144,8 @@
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
-        <li><label for="total">Total articles</label> <input name="total" id="root.bibliography.total"/></li>
+        <li><label for="chosen">Articles chosen</label> <input name="chosen" id="root.bibliography.chosen"/></li>
+        <li><label for="total">Articles total</label> <input name="total" id="root.bibliography.total"/></li>
         <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
         <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai"/></li>
         <li><label for="newspaper">Newspaper</label> <select name="newspaper" id="root.bibliography.newspaper">
@@ -193,7 +194,7 @@
             </li>
         </ul>
         </fieldset>
-        <li><label for="file">File</label> <input name="file" id="root.bibliography.file"/><!--<upload-field name="file" id="root.bibliography.file"/>--></li>
+        <li><label for="file">File</label> <!--<input name="file" id="root.bibliography.file"/>--><upload-field name="file" id="root.bibliography.file" url="/db/<%-name%>/upload"/>/li>
         <script>
         </script>
         <li><label for="photo">Photo</label>
@@ -216,6 +217,7 @@
     </fieldset>
     <script>
         if (data.bibliography) {
+            setEditValue("root.bibliography.chosen", data.bibliography.chosen);
             setEditValue("root.bibliography.total", data.bibliography.total);
             setEditValue("root.bibliography.headline", data.bibliography.headline);
             setEditValue("root.bibliography.headline-thai", data.bibliography["headline-thai"]);
@@ -234,6 +236,7 @@
 
         function getBibliography() {
             return {
+                chosen: getEditValue("root.bibliography.chosen"),
                 total: getEditValue("root.bibliography.total"),
                 headline: getEditValue("root.bibliography.headline"),
                 "headline-thai": getEditValue("root.bibliography.headline-thai"),
@@ -493,10 +496,28 @@
                     timeLegend.innerText = "Time";
                     timeGroup.appendChild(timeLegend);
                     addSelect(timeGroup, "Season", "happening-time-season", ["", "Hot season", "Rainy season", "Cool season"], happening && happening.time ? happening.time.season: "");
-                    addText(timeGroup, "Year", "happening-time-year", happening && happening.time ? happening.time.year: "");
+                    let timeFrom = ""
+                    let timeTo = ""
+                    if (happening && happening.time) {
+                        if (happening.time.from) {
+                            timeFrom = happening.time.from
+                        }
+                        else if (happening.time.year && happening.time.month && happening.time.day) {
+                            timeFrom = `${happening.time.year}/${happening.time.month}/${happening.time.day}`
+                        }
+                        if (happening.time.to) {
+                            timeTo = happening.time.to
+                        }
+                        else {
+                            timeTo = timeFrom
+                        }
+                    }
+                    addText(timeGroup, "From", "happening-time-from", timeFrom, "date");
+                    addText(timeGroup, "To", "happening-time-to", timeTo, "date");
+                    /*addText(timeGroup, "Year", "happening-time-year", happening && happening.time ? happening.time.year: "");
                     addText(timeGroup, "Month", "happening-time-month", happening && happening.time ? happening.time.month: "");
                     addText(timeGroup, "Day", "happening-time-day", happening && happening.time ? happening.time.day: "");
-                    addText(timeGroup, "Period", "happening-time-period", happening && happening.time ? happening.time.period: "");
+                    addText(timeGroup, "Period", "happening-time-period", happening && happening.time ? happening.time.period: "");*/
                     group.appendChild(timeGroup);
                     happenings.appendChild(happeningContainer);
                 }
@@ -526,10 +547,12 @@
                         "place-specific": happening.getElementsByClassName("happening-place-specific")[0].value,
                         time:{
                             season: happening.getElementsByClassName("happening-time-season")[0].value,
-                            year: happening.getElementsByClassName("happening-time-year")[0].value,
+                            from: happening.getElementsByClassName("happening-time-from")[0].value,
+                            to: happening.getElementsByClassName("happening-time-to")[0].value,
+                            /*year: happening.getElementsByClassName("happening-time-year")[0].value,
                             month: happening.getElementsByClassName("happening-time-month")[0].value,
                             day: happening.getElementsByClassName("happening-time-day")[0].value,
-                            period: happening.getElementsByClassName("happening-time-period")[0].value
+                            period: happening.getElementsByClassName("happening-time-period")[0].value*/
                         }
                     }
                 }
@@ -649,7 +672,7 @@
                         "Pre-elderly (51-60)",
                         "Elderly (60~)",
                         "Unspecified"
-                    ], person ? translateAge(person["person-age"]) : "");
+                    ], person ? translateAge(person.age) : "");
                     addText(group, "Age specific", "person-age-specific", person ? person["age-specific"] : "");
                     addText(group, "Role", "person-role", person ? person.role : "");
                     addText(group, "Action", "person-action", person ? person.action : "");

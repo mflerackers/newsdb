@@ -1,28 +1,28 @@
 class UploadField extends HTMLElement {
     constructor() {
         super();
-
+        
         let shadow = this.attachShadow({mode: 'open'});
-
+        
         let style = document.createElement('style');
-
+        
         style.textContent = `.label { border: 1px solid silver; border-radius: 5px; font-size: 14px; line-height:17px; padding: 4px; display: block; }`;
         shadow.appendChild(style);
-
+        
         let span = document.createElement("span");
         span.classList.add("label");
         span.innerText = "Drop a file here";
         shadow.appendChild(span);
     }
-
+    
     get value() {
         return this.getAttribute("value");
     }
-
+    
     set value(newValue) {
         this.setAttribute("value", newValue);
     }
-
+    
     checkAuth(files) {
         const url = "/isauth";
         fetch(url, {
@@ -56,13 +56,13 @@ class UploadField extends HTMLElement {
         })
         .catch(() => { /* Error. Inform the user */ })
     }
-
+    
     uploadFile(file) {
-        const url = "/training/upload";
+        const url = this.getAttribute("url")
         const formData = new FormData()
-
+        
         formData.append('file', file)
-
+        
         fetch(url, {
             method: 'POST',
             body: formData
@@ -84,26 +84,26 @@ class UploadField extends HTMLElement {
                 e.stopPropagation();
             }, false);
         });
-
+        
         ['dragenter', 'dragover'].forEach(eventName =>{
             this.addEventListener(eventName, (e)=>{
                 this.style.backgroundColor = "red";
             }, false);
         });
-
+        
         ['dragleave', 'drop'].forEach(eventName =>{
             this.addEventListener(eventName, (e)=>{
                 this.style.backgroundColor = "white";
             }, false);
         });
-
+        
         this.addEventListener("drop", (e)=>{
             this.style.backgroundColor = "white";
             const files = [...e.dataTransfer.files];
             this.checkAuth(files);
         });
     }
-
+    
     attributeChangedCallback(name, oldValue, newValue) {
         switch (name) {
             case "value":
@@ -111,7 +111,7 @@ class UploadField extends HTMLElement {
                 let shadow = this.shadowRoot;
                 let old = shadow.querySelector(".label");
                 shadow.removeChild(old);
-
+                
                 if (newValue) {               
                     let a = document.createElement("a");
                     a.classList.add("label");
@@ -130,8 +130,8 @@ class UploadField extends HTMLElement {
             }
         }
     }
-
+    
     static get observedAttributes() { return ['value']; }
-  }
+}
 
 customElements.define('upload-field', UploadField);
