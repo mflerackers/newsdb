@@ -180,6 +180,15 @@ function defineRoutes() {
         res.render('auth.ejs', {});
     });
 
+    app.get('/redirected', async (req, res) => {
+        let code = req.query.code;
+        let error = req.query.error;
+        console.log(`auth code: ${code} auth error: ${error}`);
+        let token = await drive.authenticate(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, code, error);
+        req.session.authToken = token;
+        res.render('auth.ejs', {});
+    });
+
     /*app.post('/training/upload', function(req, res) {
         new formidable.IncomingForm().parse(req, async (err, fields, files) => {
             if (err) {
