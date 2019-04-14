@@ -130,17 +130,17 @@
     <fieldset style="margin-top: 20px;"><legend>General</legend>
     <ul>
         <li><label for="id">Id</label> <input name="id" id="root.id"/></li>
-        <li><label for="relevance">Relevance</label> 
+        <!--<li><label for="relevance">Relevance</label> 
             <select name="relevance" id="root.relevance">
                 <option>beauty/cleanliness</option>
                 <option>other articles</option>
             </select>
-        </li>
+        </li>-->
     </ul>
     </fieldset>
     <script>
         setEditValue("root.id", data.id);
-        setSelectValue("root.relevance", data.relevance);
+        //setSelectValue("root.relevance", data.relevance);
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
@@ -1121,7 +1121,7 @@
     document.getElementById("save").addEventListener("click", ()=>{
         let data = {
             id: getEditValue("root.id"),
-            relevance: getEditValue("root.relevance"),
+            //relevance: getEditValue("root.relevance"),
             newCategory: getEditValue("root.newCategory"),
             bibliography: getBibliography(),
             categories: {
