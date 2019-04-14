@@ -148,8 +148,8 @@ function getRouter(db, definitions, queryNames, fieldNames) {
             }
             else {
                 res.render('db_list.ejs', {
-                    title: `collection: ${req.params.name}`,
-                    name: req.params.name,
+                    title: `Collection: ${collection.friendlyName}`,
+                    collection: collection,
                     articles:result,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
