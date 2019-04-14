@@ -55,7 +55,8 @@ async function listFiles(auth, query="name='Test'") {
   let files = await drive.files.list({
       pageSize: 10,
       fields: 'nextPageToken, files(id, name)',
-      q: query
+      q: query,
+      supportsTeamDrives: true
   });
   console.log(`listFiles returned ${JSON.stringify(files)}`);
   return files.data.files;
@@ -73,7 +74,8 @@ async function createFile(auth, name, mime, contents, parents) {
           mimeType: mime,
           body: contents
       },
-      fields: 'id, name, webViewLink'
+      fields: 'id, name, webViewLink',
+      supportsTeamDrives: true
   });
   return data;
 }
@@ -86,7 +88,8 @@ async function updateFile(auth, fileId, mime, contents) {
             mimeType: mime,
             body: contents
         },
-        fields: 'id, name, webViewLink'
+        fields: 'id, name, webViewLink',
+        supportsTeamDrives: true
     });
     return data;
 }
@@ -114,7 +117,8 @@ async function createFolder(auth, name) {
           name: name,
           mimeType: 'application/vnd.google-apps.folder'
       },
-      fields: 'id'
+      fields: 'id',
+      supportsTeamDrives: true
   });
   return data.id;
 }
