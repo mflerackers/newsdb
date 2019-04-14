@@ -83,7 +83,7 @@ async function connect() {
     }
 
     try {
-        const dbRouter = require('./routes/db_router').getRouter(db, definitions, queryNames, fieldNames);
+        const dbRouter = require('./routes/db_router').getRouter(db, definitions, queryNames, fieldNames, process);
         app.use('/db', dbRouter);
         console.log("db route installed");
     }
@@ -180,7 +180,16 @@ function defineRoutes() {
         res.render('auth.ejs', {});
     });
 
-    app.post('/training/upload', function(req, res) {
+    app.get('/redirected', async (req, res) => {
+        let code = req.query.code;
+        let error = req.query.error;
+        console.log(`auth code: ${code} auth error: ${error}`);
+        let token = await drive.authenticate(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI, code, error);
+        req.session.authToken = token;
+        res.render('auth.ejs', {});
+    });
+
+    /*app.post('/training/upload', function(req, res) {
         new formidable.IncomingForm().parse(req, async (err, fields, files) => {
             if (err) {
                 console.error('Error', err)
@@ -198,7 +207,7 @@ function defineRoutes() {
             let id = await drive.getFolder(auth, 'Thai_uploads');
             console.log(`Folder id is ${id}`);
             
-            drive.createOrUpdateFile(auth, files.file.name, 'application/pdf', fs.createReadStream(files.file.path), [id])
+            drive.createOrUpdateFile(auth, files.file.name, files.file.type, fs.createReadStream(files.file.path), [id])
             .then(data => {
                 console.log(`The file is saved to google ${JSON.stringify(data)}`);
                 res.send({success:true, data:data});
@@ -287,7 +296,7 @@ function defineRoutes() {
                 });
             }
         });
-    });
+    });*/
 
     // Everything from hereon needs admin
     app.get('/', function(req, res) {

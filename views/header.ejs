@@ -156,13 +156,17 @@ go.addEventListener("click", ()=>{
             query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "new":
-        case "training/new":
-        case "training/list":
             query = `/${query}`;
+            break;
+        case "training/new":
+            query = `/db/trainingdb/new`;
+            break;
+        case "training/list":
+            query = `/db/trainingdb/list`;
             break;
         case "edit":
         case "training/edit":
-            query = `/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/db/trainingdb/edit/${encodeURIComponent(getEditValue("value1").trim())}`;
             break;
     }
     window.location = query;
