@@ -38,6 +38,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         let json = req.body
         // Add user id
         json.userId = req.session.userId
+        json.modified = new Date();
 
         // Insert or update
         db.collection(req.params.name).updateOne({id:json.id}, {$set:json}, {upsert: true}, function(err, result) {
@@ -141,7 +142,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             return
         }
         
-        db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).toArray((err, result) => {
+        db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
             if (err) {
                 res.status(404).send({success:false})
                 return console.log(err);
