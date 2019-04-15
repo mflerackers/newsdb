@@ -298,8 +298,19 @@ function defineRoutes() {
         });
     });*/
 
-    // Everything from hereon needs admin
     app.get('/', function(req, res) {
+        res.redirect("/db")
+    })
+
+    // Everything from hereon needs admin
+    app.use(function (req, res, next) {
+        if (!isAdmin(req)) {
+            return res.redirect(`/db`);
+        }
+        next();
+    });
+
+    /*app.get('/', function(req, res) {
         db.collection('thaidb').find().toArray((err, result) => {
             if (err) return console.log(err);
             if (req.query.csv) {
@@ -316,7 +327,7 @@ function defineRoutes() {
                 });
             }
         });
-    })
+    })*/
 
     app.get('/article/:id', function(req, res) {
         db.collection('thaidb').findOne({id: req.params.id}, (err, result) => {
@@ -326,7 +337,7 @@ function defineRoutes() {
     })
 
     app.get('/list', function(req, res) {
-        res.redirect('/')
+        res.redirect("/db/thaidb/list")
     })
 
     app.get('/list/:name', function(req, res) {
@@ -664,16 +675,18 @@ function defineRoutes() {
     });
 
     app.get('/new', function(req, res) {
-        res.render('new.ejs', {
+        res.redirect("/db/thaidb/new")
+        /*res.render('new.ejs', {
             data:{},
             queryNames:queryNames,
             fieldNames:fieldNames,
             authenticated: true
-        });
+        });*/
     });
 
     app.get('/edit/:id', function(req, res) {
-        db.collection('thaidb').findOne({id: req.params.id}, (err, result) => {
+        res.redirect(`/db/thaidb/edit/${req.params.id}`)
+        /*db.collection('thaidb').findOne({id: req.params.id}, (err, result) => {
             if (err) return console.log(err);
             res.render('new.ejs', {
                 data:result,
@@ -681,7 +694,7 @@ function defineRoutes() {
                 fieldNames:fieldNames,
                 authenticated: true
             });
-        });
+        });*/
     });
 
 }

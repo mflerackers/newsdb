@@ -144,7 +144,7 @@
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
-        <li><label for="chosen">Articles chosen</label> <input name="chosen" id="root.bibliography.chosen"/></li>
+        <li><label for="chosen">Articles chosen</label> <input name="chosen" id="root.bibliography.chosen" disabled/></li>
         <li><label for="total">Articles total</label> <input name="total" id="root.bibliography.total"/></li>
         <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
         <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai"/></li>
@@ -349,10 +349,13 @@
                 let country = document.getElementById("root.categories.place.geo.country");
                 let province = document.getElementById("root.categories.place.geo.province");
                 let district = document.getElementById("root.categories.place.geo.district");
-                province.disabled = country.value != "thailand";
-                district.disabled = country.value != "thailand";
-                if (province.disabled) province.value="";
-                if (district.disabled) district.value="";
+                let city = document.getElementById("root.categories.place.geo.city");
+                province.disabled = country.value !== "thailand";
+                district.disabled = country.value !== "thailand";
+                city.disabled = country.value === "thailand";
+                if (province.disabled) province.value = "";
+                if (district.disabled) district.value = "";
+                if (city.disabled) city.value = "";
             }
             function syncDistricts() {
                 let province = document.getElementById("root.categories.place.geo.province");
@@ -450,23 +453,23 @@
                     addText(group, "Name", "happening-name", happening ? happening.name : "");
                     addSelect(group, "External factor", "happening-external-factor", [
                         "",
-                        "Epidemy",
-                        "Disaster",
-                        "Weather",
-                        "Seasons",
-                        "Pollution",
-                        "Economy",
+                        "Architecture",
                         "Culture/Education",
+                        "Disaster",
+                        "Economy",
+                        "Epidemy",
+                        "Geographical area",
                         "Government",
+                        "Infrastructure",
+                        "Legal factors",
                         "Politics",
+                        "Pollution",
                         "Propaganda",
                         "Religion",
-                        "Legal factors",
+                        "Seasons",
                         "Society",
-                        "Architecture",
-                        "Infrastructure",
                         "Technology",
-                        "Geographical area",
+                        "Weather",
                         "Other (not mentioned above)",
                     ], happening ? happening["external-factor"] : "");
                     // Place geo
@@ -644,12 +647,18 @@
                     ], person ? person.field : "");
                     addText(group, "Work specific", "person-work-specific", person ? person["work-specific"] : "");
                     addText(group, "Organization", "person-organization", person ? person.organization : "");
+                    function translateGender(gender) {
+                        let mapping = {
+                            "Undecided":"Transgender"
+                        };
+                        return mapping[gender] || gender;
+                    }
                     addSelect(group, "Gender", "person-gender", [
                         "",  
                         "Female",
                         "Male",
-                        "Undecided"
-                    ], person ? person.gender : "");
+                        "Transgender"
+                    ], person ? translateGender(person.gender) : "");
                     function translateAge(age) {
                         let mapping = {
                             "Infant":"Infant (0-2)",

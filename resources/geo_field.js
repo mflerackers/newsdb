@@ -95,8 +95,10 @@ class GeoField extends HTMLElement {
         country.addEventListener("change", e=>{
             province.disabled = country.value !== "thailand";
             district.disabled = country.value !== "thailand";
+            city.disabled = country.value === "thailand";
             if (province.disabled) province.value="";
             if (district.disabled) district.value="";
+            if (city.disabled) city.value="";
         });
 
         province.addEventListener("change", e=>{
@@ -124,6 +126,7 @@ class GeoField extends HTMLElement {
         let shadow = this.shadowRoot;
         let country = shadow.querySelector(".country");
         country.value = newValue || "";
+        country.dispatchEvent(new Event("change"));
     }
 
     get province() {
