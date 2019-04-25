@@ -9,7 +9,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
     router.use(function (req, res, next) {
         if (!req.session || !req.session.userId) {
-            return res.redirect(`/login?redirect=${encodeURIComponent(req.url)}`);
+            return res.redirect(`/login?redirect=/db${encodeURIComponent(req.url)}`);
         }
         next();
     });
