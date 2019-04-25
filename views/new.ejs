@@ -125,6 +125,93 @@
     </script>
     <script>
         var data = <%-JSON.stringify(data)%>;
+
+        let db
+
+        function initDatabase() {
+            const indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+
+            if (!indexedDB) {
+                return
+            }
+
+            let request = indexedDB.open("drafts", 1)
+            let db
+
+            request.onsuccess = function(event) {
+                db = event.target.result
+                console.log("request successful", event)
+                if (data && data.id) {
+                    checkForDraft()
+                }
+            };
+            request.onerror = function(event) {
+                console.log("request failed", event)
+            };
+            request.onupgradeneeded = function(event) {
+                db = event.target.result
+
+                const objectStore = db.createObjectStore("drafts", { keyPath: "id" })
+
+                objectStore.transaction.oncomplete = function(event) {
+                    console.log("transaction completed", event)
+                }
+                objectStore.transaction.oncomplete = function(event) {
+                    console.error("transaction failed", event)
+                }
+            }
+        }
+
+        function checkForDraft(id) {
+            if (!db || !id) {
+                return;
+            }
+
+            const transaction = db.transaction(["drafts"], "readwrite")
+
+            transaction.oncomplete = function(event) {
+                console.log("transaction completed", event)
+            }
+            transaction.onerror = function(event) {
+                console.error("transaction failed", event)
+            }
+
+            const objectStore = transaction.objectStore("drafts")
+            const request = objectStore.get(id)
+            request.onsuccess = function(event) {
+                console.log("request successful", event)
+                console.log(request.result)
+                const draft = JSON.parse(request.result)
+            }
+            request.onerror = function(event) {
+                console.log("request failed", event)
+            }
+        }
+
+        function saveDraft(data) {
+            if (!db || !data || !data.id) {
+                return;
+            }
+
+            const transaction = db.transaction(["drafts"], "readwrite")
+
+            transaction.oncomplete = function(event) {
+                console.log("transaction completed", event)
+            }
+            transaction.onerror = function(event) {
+                console.error("transaction failed", event)
+            }
+
+            const objectStore = transaction.objectStore("drafts")
+            const request = objectStore.put({id:data.id, data:JSON.stringify(data)})
+            request.onsuccess = function(event) {
+                console.log("request successful", event)
+                callback(event.target.result)
+            }
+            request.onerror = function(event) {
+                console.log("request failed", event)
+            }
+        }
     </script>
     <div class="container">
     <fieldset style="margin-top: 20px;"><legend>General</legend>
@@ -506,7 +593,22 @@
                             timeFrom = happening.time.from
                         }
                         else if (happening.time.year && happening.time.month && happening.time.day) {
-                            timeFrom = `${happening.time.year}/${happening.time.month}/${happening.time.day}`
+                            const months = {
+                                "january":"1", 
+                                "february":"2", 
+                                "march":"3", 
+                                "april":"4", 
+                                "may":"5", 
+                                "june":"6", 
+                                "july":"7", 
+                                "august":8, 
+                                "september":9, 
+                                "october":10, 
+                                "november":11, 
+                                "december":12
+                            }
+                            timeFrom = `${happening.time.year}-${months[happening.time.month.toLowerCase()].padStart(2, "0")}-${happening.time.day.padStart(2, "0")}`
+                            console.log(timeFrom);
                         }
                         if (happening.time.to) {
                             timeTo = happening.time.to

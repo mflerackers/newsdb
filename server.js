@@ -14,7 +14,7 @@ const fs = require('fs');                                       // File upload
 const exportCsv = require("./csv_export");
 const drive = require("./drive");
 
-require('dotenv').load();
+require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
