@@ -91,12 +91,12 @@ async function connect() {
         console.log(err);
     }
 
-    fetchDefinitions(db);
+    fetchDefinitions(db, ()=>{
+        defineRoutes();
 
-    defineRoutes();
-
-    app.listen(process.env.PORT, () => {
-        console.log(`listening on ${process.env.PORT}`)
+        app.listen(process.env.PORT, () => {
+            console.log(`listening on ${process.env.PORT}`)
+        });
     });
 }
 
@@ -124,12 +124,13 @@ const queryNames = [
 
 const definitions = {}
 
-function fetchDefinitions(db) {
+function fetchDefinitions(db, next) {
     db.collection('definitions').find({}).toArray((err, result) => {
         if (err) return console.log(err);
         result.forEach(definition=>{
             definitions[definition.name] = definition;
         });
+        next();
     });
 }
 
