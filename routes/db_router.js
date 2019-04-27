@@ -15,7 +15,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
     });
 
     router.get('/', function(req, res) {
-        // Show list
+        // Show cached list
         res.render('db.ejs', {
             name: req.params.name,
             articles: Object.values(definitions).filter(def=>def.users.includes(req.session.userId)),
@@ -134,12 +134,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
     router.get('/:name/list', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
-            return
+            return console.log(`${req.params.name} was not in definitions`);
         }
         let collection = definitions[req.params.name]
         if (!collection.users.includes(req.session.userId)) {
             res.status(403).send({success:false})
-            return
+            return console.log(`${req.session.userId} was not in the users of req.params.name`);
         }
         
         db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
