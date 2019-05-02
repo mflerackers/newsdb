@@ -431,7 +431,7 @@
             let province = document.getElementById("root.categories.place.geo.province");
             let district = document.getElementById("root.categories.place.geo.district");
             fillSelect(country, countryList, (key)=>key.toLowerCase());
-            fillSelect(province, Object.keys(thaiProvinceDistrict), (key)=>key.toLowerCase());
+            fillSelect(province, Object.keys(thaiProvinceDistrict).sort(), (key)=>key.toLowerCase());
             function syncProvinceDistrict() {
                 let country = document.getElementById("root.categories.place.geo.country");
                 let province = document.getElementById("root.categories.place.geo.province");
