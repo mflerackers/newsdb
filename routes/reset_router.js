@@ -74,20 +74,21 @@ function getRouter(db, transporter) {
 
     router.post('/password', (req, res) => {
         db.collection('users').findOne({resetToken:req.body.token, resetTokenExpires:{$gt:Date.now()}}, (err, user) => {
-            if (err) {
+            if (err || !user) {
                 res.send(`Reset token no longer valid, user not found`);
                 console.error(err);
             }
             else {
                 try {
                     // Set the new password and erase the token information
+                    let id = user._id
                     bcrypt.hash(req.body.password, 10, function (err, hash){
                         if (err) {
                             res.send(`Reset token no longer valid`);
                             console.error("error", err);
                         }
                         else {
-                            db.collection("users").updateOne({_id:user._id}, {$set:{password:hash}, $unset:{resetToken:"", resetTokenExpires:""}});
+                            db.collection("users").updateOne({_id:id}, {$set:{password:hash}, $unset:{resetToken:"", resetTokenExpires:""}});
                             res.send(`Password has been reset`);
                         }
                     });
