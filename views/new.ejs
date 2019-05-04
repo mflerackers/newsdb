@@ -39,6 +39,7 @@
 </head>
 <body>
     <%- include('header'); -%>
+    <h1><a href="/db">Collection</a>: <a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a></h1>
     <script>
     function addText(parent, labelText, name, value, type) {
         let li = document.createElement("li");

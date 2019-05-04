@@ -98,6 +98,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     }
                 }
             },
+            collection: collection,
             queryNames:queryNames,
             fieldNames:fieldNames,
             authenticated: true
@@ -124,6 +125,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             res.render('new.ejs', {
                 name: req.params.name,
                 data:result,
+                collection: collection,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
                 authenticated: true
