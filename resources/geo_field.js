@@ -55,7 +55,7 @@ class GeoField extends HTMLElement {
         let province = document.createElement("select");
         province.classList.add("province");
         province.innerHTML = "<option></option>";
-        Object.keys(thaiProvinceDistrict).forEach(provinceName=>{
+        Object.keys(thaiProvinceDistrict).sort().forEach(provinceName=>{
             let option = document.createElement("option");
             option.value = provinceName.toLowerCase();
             option.text = provinceName;
