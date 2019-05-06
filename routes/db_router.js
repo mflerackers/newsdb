@@ -144,7 +144,27 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             return console.log(`${req.session.userId} was not in the users of req.params.name`);
         }
         
-        db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
+        //db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
+        let match = req.session.admin ? {} : {userId: req.session.userId};
+        db.collection(req.params.name).aggregate([
+                {"$match": match},
+                {"$addFields": { "userId": { "$toObjectId": "$userId" }}},
+                {"$lookup":{
+                    "from": 'users',
+                    "localField": 'userId',
+                    "foreignField": '_id',
+                    "as": 'user'
+                }},
+                {"$unwind": "$user"},
+                {"$project":{
+                    "id":1,
+                    "bibliography":{"headline":1},
+                    "article":{"abstract":1},
+                    "user":{"name":1},
+                    "modified":1
+                }},
+                {"$sort":{"modified":-1}}
+            ]).toArray((err, result) => {
             if (err) {
                 res.status(404).send({success:false})
                 return console.log(err);
