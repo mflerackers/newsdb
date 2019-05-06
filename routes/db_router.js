@@ -36,12 +36,17 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         // Get json
         let json = req.body
-        // Add user id
-        json.userId = req.session.userId
+        // Update modified
         json.modified = new Date();
 
         // Insert or update
-        db.collection(req.params.name).updateOne({id:json.id}, {$set:json}, {upsert: true}, function(err, result) {
+        db.collection(req.params.name).updateOne(
+            {id:json.id}, 
+            {
+                $set:json, 
+                $setOnInsert: { userId: req.session.userId }
+            }, 
+            {upsert: true}, function(err, result) {
             if (err) {
                 res.status(200).send({success:false})
                 console.log("error", err)
