@@ -139,6 +139,7 @@ class GeoField extends HTMLElement {
         let shadow = this.shadowRoot;
         let province = shadow.querySelector(".province");
         province.value = newValue || "";
+        province.dispatchEvent(new Event("change"));
     }
 
     get district() {
