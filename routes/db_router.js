@@ -162,7 +162,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 }},
                 {"$unwind": "$user"},
                 {"$project":{
-                    "id":1,
+                    "id":{ $cond: { if: { $ne:["$id", ""] }, then:"$id", else:"untitled" } },
                     "bibliography":{"headline":1},
                     "article":{"abstract":1},
                     "user":{"name":1},
