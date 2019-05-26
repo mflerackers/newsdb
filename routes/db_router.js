@@ -160,7 +160,10 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     "foreignField": '_id',
                     "as": 'user'
                 }},
-                {"$unwind": "$user"},
+                {"$unwind": {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }},
                 {"$project":{
                     "id":{ $cond: { if: { $ne:["$id", ""] }, then:"$id", else:"untitled" } },
                     "bibliography":{"headline":1},
