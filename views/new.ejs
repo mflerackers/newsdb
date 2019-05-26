@@ -119,8 +119,10 @@
     }
     function setSelectValue(name, value) {
         let select = document.getElementById(name);
-        if (!select)
+        if (!select) {
+            console.log(`select named ${name} not found`)
             return;
+        }
         select.value = value;
     }
     </script>
@@ -587,13 +589,13 @@
                     timeLegend.innerText = "Time";
                     timeGroup.appendChild(timeLegend);
                     addSelect(timeGroup, "Season", "happening-time-season", ["", "Hot season", "Rainy season", "Cool season"], happening && happening.time ? happening.time.season: "");
-                    let timeFrom = ""
-                    let timeTo = ""
+                    let timeFrom
+                    let timeTo
                     if (happening && happening.time) {
                         if (happening.time.from) {
                             timeFrom = happening.time.from
                         }
-                        else if (happening.time.year && happening.time.month && happening.time.day) {
+                        else if (happening.time.year && happening.time.year != "NA" && happening.time.month && happening.time.day) {
                             const months = {
                                 "january":"1", 
                                 "february":"2", 
@@ -602,19 +604,39 @@
                                 "may":"5", 
                                 "june":"6", 
                                 "july":"7", 
-                                "august":8, 
-                                "september":9, 
-                                "october":10, 
-                                "november":11, 
-                                "december":12
+                                "august":"8", 
+                                "september":"9", 
+                                "october":"10", 
+                                "november":"11", 
+                                "december":"12"
                             }
-                            timeFrom = `${happening.time.year}-${months[happening.time.month.toLowerCase()].padStart(2, "0")}-${happening.time.day.padStart(2, "0")}`
+                            console.log(happening.time.year, happening.time.month, happening.time.day);
+                            let year = happening.time.year
+                            if (happening.time.month == "NA") {
+                                timeFrom = `${year}-01-01`
+                                timeTo = `${year}-12-${(new Date(year, 13, 0)).getDate()}`
+                            }
+                            else {
+                                let month = months[happening.time.month.toLowerCase()]
+                                if (!month) {
+                                    console.log("month not found", month)
+                                }
+                                if (happening.time.day == "NA") {
+                                    timeFrom = `${year}-${month.padStart(2, "0")}-01`
+                                    timeTo = `${year}-${month.padStart(2, "0")}-${(new Date(year, +month + 1, 0)).getDate()}`
+                                }
+                                else {
+                                    timeFrom = `${year}-${month.padStart(2, "0")}-${happening.time.day.padStart(2, "0")}`
+                                    timeTo = timeFrom
+                                }
+                            }
                             console.log(timeFrom);
+                            console.log(timeTo);
                         }
                         if (happening.time.to) {
                             timeTo = happening.time.to
                         }
-                        else {
+                        else if (!timeTo) {
                             timeTo = timeFrom
                         }
                     }
