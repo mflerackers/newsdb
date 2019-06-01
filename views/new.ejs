@@ -1275,6 +1275,10 @@
                 "keywords-thai": getEditValue("root.article.keywords-thai")
             }
         }
+        if (!data.id) {
+            alert("Can't save without an id")
+            return
+        }
         console.log(JSON.stringify(data,null,2));
         //let container = document.getElementsByClassName("container")[0];
         //container.classList.add('loader');
