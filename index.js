@@ -3,8 +3,10 @@ const importDb = require('./importDb.js');
 const fs = require('fs');
 
 const list = JSON.parse(fs.readFileSync("fileList.json", "utf8"));
-for (path of list) {
-    const json = importCsv(path);
+for ([path, userId] of list) {
+    const json = importCsv(path, "2.6", userId);
+    //console.log(JSON.stringify(json, null, 2))
+    //console.log(path)
     importDb(json);
 }
 
