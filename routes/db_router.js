@@ -150,29 +150,39 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         
         //db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
-        let match = req.session.admin ? {} : {userId: req.session.userId};
-        db.collection(req.params.name).aggregate([
-                {"$match": match},
-                {"$addFields": { "userId": { "$toObjectId": "$userId" }}},
-                {"$lookup":{
-                    "from": 'users',
-                    "localField": 'userId',
-                    "foreignField": '_id',
-                    "as": 'user'
-                }},
-                {"$unwind": {
-                    path: "$user",
-                    preserveNullAndEmptyArrays: true
-                }},
-                {"$project":{
-                    "id":{ $cond: { if: { $ne:["$id", ""] }, then:"$id", else:"untitled" } },
-                    "bibliography":{"headline":1},
-                    "article":{"abstract":1},
-                    "user":{"name":1},
-                    "modified":1
-                }},
-                {"$sort":{"modified":-1}}
-            ]).toArray((err, result) => {
+        let stages = []
+        let match = req.session.admin ? {} : {userId: req.session.userId}
+        stages.push({"$match": match})
+        if (!req.query.csv) {
+            // Change string to id
+            stages.push({"$addFields": { "userId": { "$toObjectId": "$userId" }}})
+            // Do a join with the user table
+            stages.push({"$lookup":{
+                "from": 'users',
+                "localField": 'userId',
+                "foreignField": '_id',
+                "as": 'user'
+            }})
+            // Unwind, as user will be an array even when only one element is matched
+            stages.push({"$unwind": {
+                path: "$user",
+                preserveNullAndEmptyArrays: true
+            }})
+            // Project in order to erase sensitive user data
+            stages.push({"$project":{
+                "id":{ $cond: { if: { $ne:["$id", ""] }, then:"$id", else:"untitled" } },
+                "bibliography":{"headline":1},
+                "article":{"abstract":1},
+                "user":{"name":1},
+                "modified":1
+            }})
+            // Sort by modified
+            stages.push({"$sort":{"modified":-1}})
+        }
+        else {
+            stages.push({"$sort":{"id":1}})
+        }
+        db.collection(req.params.name).aggregate(stages).toArray((err, result) => {
             if (err) {
                 res.status(404).send({success:false})
                 return console.log(err);
