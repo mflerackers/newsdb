@@ -483,6 +483,42 @@ function defineRoutes() {
                 res.status(200).send(articles.join("\n"));
             }
             else {
+                let statistics = {}
+                {
+                    let data = result.map(article => [article._id.first, article._id.second, article.count])
+                    let count = data.reduce((a,v)=>a+v[2], 0)
+                    let[xIndices, xKeys] = stats.factorize(data.map(v=>v[0]))
+                    let[yIndices, yKeys] = stats.factorize(data.map(v=>v[1]))
+                    let columns = xKeys.length
+                    let rows = yKeys.length
+                    let observed = new Array(columns*rows).fill(0)
+                    data.forEach((v,i)=>{
+                        observed[xIndices[i]+yIndices[i]*columns] = v[2]
+                    })
+                    let expected = new Array(columns*rows).fill(0)
+                    let colCount = xKeys.map(k=>data.filter(v=>v[0]==k).map(v=>v[2]).reduce((a,v)=>a+v, 0))
+                    let rowCount = yKeys.map(k=>data.filter(v=>v[1]==k).map(v=>v[2]).reduce((a,v)=>a+v, 0))
+                    for (let i = 0; i < columns; i++) {
+                        for (let j = 0; j < rows; j++) {
+                            expected[j*columns+i] = colCount[i]*rowCount[j]/count
+                        }
+                    }
+                    statistics.v = stats.cramersv(observed, expected, count, columns, rows)
+                    let pX = colCount.map(v=>v/count)
+                    let pY = rowCount.map(v=>v/count)
+                    let hX = -pX.reduce((a,v)=>a+v*Math.log(v), 0)
+                    let hY = -pY.reduce((a,v)=>a+v*Math.log(v), 0)
+                    console.log(pX, pY, hX, hY)
+                    let pXY = observed.map(v=>v/count)
+                    let hXY = pXY.reduce((a,v,i)=>v==0 ? a : a+v*Math.log(pY[Math.floor(i/columns)]/v), 0)
+                    let hYX = pXY.reduce((a,v,i)=>v==0 ? a : a+v*Math.log(pX[Math.floor(i%columns)]/v), 0)
+                    console.log(pXY, hXY, hYX)
+                    let uXY = (hX-hXY)/hX
+                    let uYX = (hY-hYX)/hY
+                    statistics.uxy = uXY
+                    statistics.uyx = uYX
+                }
+
                 let articles = result.map(article => ({first:article._id.first, second:article._id.second, count:article.count}));
                 let count = req.query.chart ? result.map(article => article.count) : false;
                 let labels = [];
@@ -529,7 +565,8 @@ function defineRoutes() {
                     datasets:datasets,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
-                    authenticated: true
+                    authenticated: true,
+                    statistics: statistics
                 });
             }
         });

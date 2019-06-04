@@ -8,7 +8,7 @@
 <body>
     <%- include('header'); -%>
     <h1>Group(<%- `${first}, ${second}`%>)</h1>
-    <div><%= articles.length %> results</div>
+    <div><%= articles.length %> results | <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> |</div>
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
