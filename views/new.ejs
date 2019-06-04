@@ -1242,12 +1242,23 @@
         </ul>
     </fieldset>
     <script>
+        function keywordsToString(keywords) {
+            if (typeof keywords === "string") {
+                return keywords.split(",").map(keyword => keyword.trim().toLowerCase()).join(", ")
+            }
+            else if (Array.isArray(keywords)) {
+                return keywords.join(", ")
+            }
+            else {
+                return keywords
+            }
+        }
         setEditValue("root.comments", data.comments);
         if (data.article) {
             setEditValue("root.article.text", data.article.text);
             setEditValue("root.article.abstract", data.article.abstract);
-            setEditValue("root.article.keywords", data.article.keywords);
-            setEditValue("root.article.keywords-thai", data.article["keywords-thai"]);
+            setEditValue("root.article.keywords", keywordsToString(data.article.keywords));
+            setEditValue("root.article.keywords-thai", keywordsToString(data.article["keywords-thai"]));
         }
     </script>
     <button id="save">Save</button>
@@ -1271,8 +1282,8 @@
             article:{
                 text: getEditValue("root.article.text"),
                 abstract: getEditValue("root.article.abstract"),
-                keywords: getEditValue("root.article.keywords"),
-                "keywords-thai": getEditValue("root.article.keywords-thai")
+                keywords: getEditValue("root.article.keywords").split(",").map(keyword => keyword.trim().toLowerCase()),
+                "keywords-thai": getEditValue("root.article.keywords-thai").split(",").map(keyword => keyword.trim().toLowerCase()),
             }
         }
         if (!data.id) {
