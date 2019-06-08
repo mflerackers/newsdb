@@ -116,10 +116,7 @@ const queryNames = [
     "map",
     "search",
     "new",
-    "edit",
-    "training/new",
-    "training/edit",
-    "training/list"
+    "edit"
 ];
 
 const definitions = {}

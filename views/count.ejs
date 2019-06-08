@@ -13,10 +13,10 @@
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/list/<%- attribute %>/<%= encodeURIComponent(articles[i].name) %>">
+            <a href="<%- `/db/${dbName}/count/${attribute}/${encodeURIComponent(articles[i].name)}`%>">
             <span><%= articles[i].name %>,<%= articles[i].count %></span>
             </a>
-            <a href="/map/<%- attribute %>/<%= encodeURIComponent(articles[i].name) %>" style="text-decoration-line: none;">
+            <a href="<%- `/db/${dbName}/map/${attribute}/${encodeURIComponent(articles[i].name)}`%>" style="text-decoration-line: none;">
                 <span> 🗺️</span>
             </a>
         </li>

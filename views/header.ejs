@@ -35,13 +35,13 @@
 <script>
 function getSelectValue(name) {
     let select = document.getElementById(name);
-    return select ? select.options[select.selectedIndex].value : "";
+    return select ? select.value || "" : "";
 }
 function setSelectValue(name, value) {
     let select = document.getElementById(name);
     if (!select)
         return;
-    select.selectedIndex = Array.prototype.findIndex.call(select.options, o=>o.value==value);
+    select.value = value || "";
 }
 function getEditValue(name) {
     let edit = document.getElementById(name);
@@ -64,30 +64,33 @@ function updateVisibility(query) {
     document.getElementById("value1-block").style.display = value1Enable.includes(query) ? "inline" : "none";
     document.getElementById("value2-block").style.display = value2Enable.includes(query) ? "inline" : "none";
 }
+let dbName
 window.addEventListener("load", ()=>{
-    let path = window.location.pathname;
+    let path = window.location.pathname
     let components = path.split("/")
-    let query = components[1];
-    if (query === "training") {
-        query += "/" + components[2];
+    let query = components[1]
+    if (components[1] === "db") {
+        dbName = components[2]
+        query = components[3]
     }
+    console.log(components, dbName, query)
     switch (query) {
         case "":
             query = "all";
             break;
-        case "article":
-            setEditValue("value1", decodeURIComponent(components[2] || ""));
+        case "edit":
+            setEditValue("value1", decodeURIComponent(components[4] || ""));
             break;
         case "list":
         case "count":
-            setSelectValue("field1", components[2]);
-            setEditValue("value1", decodeURIComponent(components[3] || ""));
+            setSelectValue("field1", components[4]);
+            setEditValue("value1", decodeURIComponent(components[5] || ""));
             break;
         case "group":
-            setSelectValue("field1", components[2]);
-            setSelectValue("field2", components[3]);
-            setEditValue("value1", decodeURIComponent(components[4] || ""));
-            setEditValue("value2", decodeURIComponent(components[5] || ""));
+            setSelectValue("field1", components[4]);
+            setSelectValue("field2", components[5]);
+            setEditValue("value1", decodeURIComponent(components[6] || ""));
+            setEditValue("value2", decodeURIComponent(components[7] || ""));
             break;
         case "map":
             setSelectValue("field1", components[2]);
@@ -106,12 +109,6 @@ window.addEventListener("load", ()=>{
             }
             break;
         case "new":
-        case "training/new":
-        case "training/list":
-            break;
-        case "edit":
-        case "training/edit":
-            setEditValue("value1", decodeURIComponent((query === "edit" ? components[2] : components[3]) || ""));
             break;
     }
     setSelectValue("query", query);
@@ -129,24 +126,24 @@ go.addEventListener("click", ()=>{
         case "all":
             query = `/`;
             break;
-        case "article":
-            query = `/${query}/${encodeURIComponent(getEditValue("value1"))}`;
+        case "edit":
+            query = `/db/${dbName}/${query}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "list":
         case "count":
             if (getEditValue("value1")) {
-                query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+                query = `/db/${dbName}/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
             }
             else {
-                query = `/${query}/${getSelectValue("field1")}`;
+                query = `/db/${dbName}/${query}/${getSelectValue("field1")}`;
             }
             break;
         case "group":
             if (getEditValue("value1") && getEditValue("value1")) {
-                query = `/${query}/${getSelectValue("field1")}/${getSelectValue("field2")}/${encodeURIComponent(getEditValue("value1"))}/${encodeURIComponent(getEditValue("value2"))}`;
+                query = `/db/${dbName}/${query}/${getSelectValue("field1")}/${getSelectValue("field2")}/${encodeURIComponent(getEditValue("value1"))}/${encodeURIComponent(getEditValue("value2"))}`;
             }
             else {
-                query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getSelectValue("field2"))}`;
+                query = `/db/${dbName}/${query}/${getSelectValue("field1")}/${encodeURIComponent(getSelectValue("field2"))}`;
             }
             break;
         case "map":
@@ -156,17 +153,10 @@ go.addEventListener("click", ()=>{
             query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "new":
-            query = `/${query}`;
-            break;
-        case "training/new":
-            query = `/db/trainingdb/new`;
-            break;
-        case "training/list":
-            query = `/db/trainingdb/list`;
+            query = `/db/${dbName}/${query}`;
             break;
         case "edit":
-        case "training/edit":
-            query = `/db/trainingdb/edit/${encodeURIComponent(getEditValue("value1").trim())}`;
+            query = `/db/${dbName}/edit/${encodeURIComponent(getEditValue("value1").trim())}`;
             break;
     }
     window.location = query;

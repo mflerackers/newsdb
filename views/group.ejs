@@ -8,22 +8,21 @@
 <body>
     <%- include('header'); -%>
     <h1>Group(<%- `${first}, ${second}`%>)</h1>
-    <div><%= articles.length %> results | <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> |</div>
+    <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> | <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> |</div>
     <ul class="articles" style="display: inline-block; float:left">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href=<%- `"/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>">
+            <a href=<%- `"/db/${dbName}/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>">
             <span><%= [articles[i].first, articles[i].second, articles[i].count].join(",") %></span>
             </a>
         </li>
         <% } %>
     </ul>
     <% if (count) { %>
-        <div><a href=<%- `"/group/${first}/${second}"` %>>Hide chart</a></div>
+        <div><a href=<%- `"/db/${dbName}/group/${first}/${second}"` %>>Hide chart</a></div>
     <% } else { %>
-        <div><a href=<%-`"/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
+        <div><a href=<%-`"/db/${dbName}/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
     <% } %>
-    <div><a href=<%-`"/group/${first}/${second}?csv=true"` %>>CSV</a></div>
     <div style="display: inline-block; float:left">
         <canvas id="resultChart" width="800" height="400"></canvas>
     </div>
