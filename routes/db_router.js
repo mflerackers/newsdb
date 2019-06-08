@@ -252,6 +252,16 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
     });
 
     router.get('/:name/count/:param', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
         let group = req.params.param;
         let aggregate = [];
         if (group.startsWith("categories.happening")) {
@@ -285,7 +295,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             }
             else {
                 res.render('count.ejs', {
-                    articles:articles, 
+                    articles:articles,
+                    collection:collection,
                     count:count,
                     dbName:req.params.name,
                     attribute:req.params.param, 
@@ -333,7 +344,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             else {
                 res.render('db_list.ejs', {
                     articles:result, 
-                    title:`${collection.friendlyName} - ${req.params.name} - ${req.params.value}`,
+                    title:`${collection.friendlyName} - ${req.params.param} - ${req.params.value}`,
+                    query: `Filter(${req.params.param}:${req.params.value})`,
                     collection: collection,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
@@ -344,6 +356,16 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
     })
 
     router.get('/:name/group/:first/:second', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
         let firstGroup = req.params.first;
         let secondGroup = req.params.second;
         let aggregate = [];
@@ -446,6 +468,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 console.log(articles, labels, categories, datasets);
 
                 res.render('group.ejs', {
+                    collection:collection,
                     articles:articles, 
                     count:count,
                     dbName:req.params.name,
@@ -480,7 +503,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             if (err) return console.log(err);
             res.render('db_list.ejs', {
                 articles:result, 
-                title:`${collection.friendlyName} - ${req.params.first}:${req.params.valueFirst} - ${req.params.second}:${req.params.valueSecond}`,
+                title:`${collection.friendlyName} - Group(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
+                query: `Filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
                 collection: collection,
                 queryNames:queryNames,
                 fieldNames:fieldNames,

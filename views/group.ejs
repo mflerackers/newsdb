@@ -7,24 +7,31 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1>Group(<%- `${first}, ${second}`%>)</h1>
+    <h1><a href="/db">Collection</a>: <%- collection.friendlyName %> : Group(<%- `${first}, ${second}`%>)</h1>
     <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> | <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> |</div>
-    <ul class="articles" style="display: inline-block; float:left">
-        <% for(var i=0; i<articles.length; i++) {%>
-        <li class="article">
-            <a href=<%- `"/db/${dbName}/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>">
-            <span><%= [articles[i].first, articles[i].second, articles[i].count].join(",") %></span>
-            </a>
-        </li>
-        <% } %>
-    </ul>
-    <% if (count) { %>
-        <div><a href=<%- `"/db/${dbName}/group/${first}/${second}"` %>>Hide chart</a></div>
-    <% } else { %>
-        <div><a href=<%-`"/db/${dbName}/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
-    <% } %>
-    <div style="display: inline-block; float:left">
-        <canvas id="resultChart" width="800" height="400"></canvas>
+    <div style="display: flex;">
+        <div style="flex: 50%;">
+            <table>
+                <tr><th><%= first %></th><th><%= second %></th><th>count</th></tr>
+                <% for(var i=0; i<articles.length; i++) {%>
+                <tr>
+                    <td><%= articles[i].first %></td>
+                    <td><%= articles[i].second %></td>
+                    <td><a href=<%- `"/db/${dbName}/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>"><%= articles[i].count %></a></td>
+                </tr>
+                <% } %>
+            </table>
+        </div>
+        <div style="flex: 50%;">
+            <% if (count) { %>
+                <div><a href=<%- `"/db/${dbName}/group/${first}/${second}"` %>>Hide chart</a></div>
+            <% } else { %>
+                <div><a href=<%-`"/db/${dbName}/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
+            <% } %>
+            <div style="display: inline-block; float:left">
+                <canvas id="resultChart" width="800" height="400"></canvas>
+            </div>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <% if (count) { %>

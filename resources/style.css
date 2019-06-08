@@ -50,3 +50,21 @@ button:hover.delete {
     align-items: center;
     color: white;
 }
+
+table {
+    border-collapse: collapse;
+    margin: 16px;
+}
+
+table, th, td {
+    border: 1px solid darkgray;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
