@@ -150,7 +150,7 @@ go.addEventListener("click", ()=>{
             query = `/db/${dbName}/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "search":
-            query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/db/${dbName}/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "new":
             query = `/db/${dbName}/${query}`;

@@ -561,6 +561,31 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     });
 
+    router.get('/:name/search', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        db.collection(req.params.name).find({ $text: { $search: req.query.query } }, {"article.abstract":1, _id:1}).toArray((err, result) => {
+            if (err) return console.log(err);
+            result.sort();
+            res.render('index.ejs', {
+                articles:result, 
+                attribute:req.params.name, 
+                title:req.params.name,
+                queryNames:queryNames,
+                fieldNames:fieldNames,
+                authenticated: true
+            });
+        });
+    })
+
     return router
 }
 
