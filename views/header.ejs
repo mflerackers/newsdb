@@ -93,8 +93,8 @@ window.addEventListener("load", ()=>{
             setEditValue("value2", decodeURIComponent(components[7] || ""));
             break;
         case "map":
-            setSelectValue("field1", components[2]);
-            setEditValue("value1", decodeURIComponent(components[3] || ""));
+            setSelectValue("field1", components[4]);
+            setEditValue("value1", decodeURIComponent(components[5] || ""));
             break;
         case "search":
             let search = window.location.search;
@@ -147,7 +147,7 @@ go.addEventListener("click", ()=>{
             }
             break;
         case "map":
-            query = `/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
+            query = `/db/${dbName}/${query}/${getSelectValue("field1")}/${encodeURIComponent(getEditValue("value1"))}`;
             break;
         case "search":
             query = `/${query}?query=${encodeURIComponent(getEditValue("value1"))}`;

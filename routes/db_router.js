@@ -513,6 +513,54 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     });
 
+    router.get('/:name/map/:param/:value', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        let group = req.params.param;
+        let aggregate = [];
+        if ([group].some(name => name.startsWith("categories.happening"))) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if ([group].some(name => name.startsWith("categories.topics"))) {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if ([group].some(name => name.startsWith("article.keywords"))) {
+            aggregate.push({$unwind:"$article.keywords"});
+        }
+        aggregate.push({$match:{[group]:req.params.value}});
+        aggregate.push({$sortByCount:"$categories.place.geo"});
+        console.log(group, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
+            if (err) return console.log(err)
+            result = result.filter(article => article._id && article._id != "");
+            data = {};
+            result.forEach(record => {
+                let province = record._id.split(",")[1];
+                data[province] = (data[province] || 0) + record.count;
+            });
+            data = Object.entries(data).map(([province, count]) => ({name:province, count:count}));
+            res.render('map.ejs', {
+                articles:data, 
+                attribute:req.params.param, 
+                value:req.params.value,
+                collection: collection,
+                title:`Map where ${req.params.param} is ${req.params.value}`,
+                queryNames:queryNames,
+                fieldNames:fieldNames,
+                authenticated: true,
+                mapboxAccessToken:process.env.MAPTOKEN
+            });
+        });
+    });
+
     return router
 }
 
