@@ -345,7 +345,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 res.render('db_list.ejs', {
                     articles:result, 
                     title:`${collection.friendlyName} - ${req.params.param} - ${req.params.value}`,
-                    query: `Filter(${req.params.param}:${req.params.value})`,
+                    query: `filter(${req.params.param}:${req.params.value})`,
                     collection: collection,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
@@ -504,7 +504,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             res.render('db_list.ejs', {
                 articles:result, 
                 title:`${collection.friendlyName} - Group(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
-                query: `Filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
+                query: `filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
                 collection: collection,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
@@ -575,10 +575,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         db.collection(req.params.name).find({ $text: { $search: req.query.query } }, {"article.abstract":1, _id:1}).toArray((err, result) => {
             if (err) return console.log(err);
             result.sort();
-            res.render('index.ejs', {
+            res.render('db_list.ejs', {
                 articles:result, 
                 attribute:req.params.name, 
+                collection:collection,
                 title:req.params.name,
+                query: `filter(abstract contains [${req.query.query.split(" ").filter(v=>v).join(",")}])`,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
                 authenticated: true
