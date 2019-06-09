@@ -183,6 +183,33 @@ function mode(data) {
   return maxValue;
 }
 
+/*
+    Returns the frequency of each encountered value
+*/
+function counter(list) {
+  return list.reduce((a,v)=>{a[v] = (a[v] || 0) + 1; return a}, {})
+}
+
+/*
+  Returns a list with each value replaced by a sequential number, as well as the map to translate the values
+*/
+function factorize(x) {
+  let uniques = {}
+  return [x.map(v=>{
+      let n = uniques[v]
+      if (n === undefined) {
+          n = Object.keys(uniques).length
+          uniques[v] = n
+      }
+      return n
+  }), Object.keys(uniques)]
+}
+
+function cramersv(actual, expected, n, rows, columns) {
+  let x2 = actual.map((v,i)=>(v-expected[i])**2/expected[i]).reduce((v, a) => v + a, 0)
+  return Math.sqrt((x2/n)/Math.min(rows-1, columns-1))
+}
+
 module.exports = {
     median:median,
     meanp: meanp,
@@ -194,5 +221,8 @@ module.exports = {
     covarp: covarp,
     covars: covars,
     correl: correl,
-    confidence: confidence
+    confidence: confidence,
+    counter: counter,
+    factorize: factorize,
+    cramersv: cramersv
 };

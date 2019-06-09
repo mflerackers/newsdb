@@ -8,22 +8,28 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1><%- title %></h1>
+    <h1><a href="/db">Collection</a>: <%- collection.friendlyName %> : Count(<%- `${attribute}`%>)</h1>
     <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> | mean: <%= statistics.mean.toFixed(4) %> | stdev: <%= statistics.stdev.toFixed(4) %> | confidence interval: [<%= (statistics.mean-statistics.confidence).toFixed(4) %>, <%= (statistics.mean+statistics.confidence).toFixed(4) %>]</div>
-    <ul class="articles" style="display: inline-block; float:left">
-        <% for(var i=0; i<articles.length; i++) {%>
-        <li class="article">
-            <a href="/list/<%- attribute %>/<%= encodeURIComponent(articles[i].name) %>">
-            <span><%= articles[i].name %>,<%= articles[i].count %></span>
-            </a>
-            <a href="/map/<%- attribute %>/<%= encodeURIComponent(articles[i].name) %>" style="text-decoration-line: none;">
-                <span> 🗺️</span>
-            </a>
-        </li>
-        <% } %>
-    </ul>  
-    <div style="display: inline-block; float:left">
-        <canvas id="resultChart" width="800" height="400"></canvas>
+    <div style="display: flex;">
+        <div style="flex: 50%;">
+            <table>
+                <tr><th><%= attribute %></th></th><th>count</th><th>map</th></tr>
+                <% for(var i=0; i<articles.length; i++) {%>
+                <tr>
+                    <td><%= articles[i].name %></td>
+                    <td><a href="<%- `/db/${dbName}/count/${attribute}/${encodeURIComponent(articles[i].name)}`%>"><%= articles[i].count %></a></td>
+                    <td><a href="<%- `/db/${dbName}/map/${attribute}/${encodeURIComponent(articles[i].name)}`%>" style="text-decoration-line: none;">
+                        <span> 🗺️</span>
+                    </a></td>
+                </li>
+                <% } %>
+            </table>
+        </div>
+        <div style="flex: 50%;">
+            <div style="display: inline-block; float:left">
+                <canvas id="resultChart" width="800" height="400"></canvas>
+            </div>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <% if (count) { %>

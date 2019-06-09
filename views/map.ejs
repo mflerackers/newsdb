@@ -33,19 +33,23 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1><%- title %></h1>
+    <h1><a href="/db">Collection</a>: <%- collection.friendlyName %> : map(<%- `${attribute}:${value}`%>)</h1>
     <div><%= articles.length %> results</div>
-    <ul class="articles" style="display: inline-block; float:left">
-        <% for(var i=0; i<articles.length; i++) {%>
-        <li class="article">
-            <a href="/group/categories.place.province/<%- attribute %>/<%- encodeURIComponent(articles[i].name) %>/<%- encodeURIComponent(value) %>">
-            <span><%= articles[i].name %>,<%= articles[i].count %></span>
-            </a>
-        </li>
-        <% } %>
-    </ul>
-    <div style="display: inline-block; float:left">
-        <div id="mapid"></div>
+    <div style="display: flex;">
+        <div style="flex: 25%;">
+            <table>
+                <tr><th><%= attribute %></th></th><th>count</th></tr>
+                <% for(var i=0; i<articles.length; i++) {%>
+                <tr>
+                    <td><%= articles[i].name %></td>
+                    <td><a href="<%- `/db/${collection.name}/group/categories.place.province/${attribute}/${encodeURIComponent(articles[i].name)}/${encodeURIComponent(value)}`%>"><%= articles[i].count %></a></td>
+                </tr>
+                <% } %>
+            </table>
+        </div>
+        <div style="flex: 75%;">
+            <div id="mapid"></div>
+        </div>
     </div>
     <script>
     var map = L.map('mapid').setView([13.7563, 100.5018], 6);
