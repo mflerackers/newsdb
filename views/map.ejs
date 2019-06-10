@@ -33,7 +33,7 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1><a href="/db">Collection</a>: <%- collection.friendlyName %> : map(<%- `${attribute}:${value}`%>)</h1>
+    <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
     <div><%= articles.length %> results</div>
     <div style="display: flex;">
         <div style="flex: 25%;">
