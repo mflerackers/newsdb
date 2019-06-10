@@ -7,12 +7,12 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1><%- title %></h1>
+    <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
     <div><%= articles.length %> results</div>
     <ul class="articles">
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
-            <a href="/list/<%- attribute %>/<%= encodeURIComponent(articles[i]) %>">
+            <a href="/db/<%- collection.name %>/list/<%- attribute %>/<%= encodeURIComponent(articles[i]) %>">
             <span><%= articles[i] %></span>
             </a>
         </li>

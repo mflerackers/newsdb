@@ -8,7 +8,7 @@
 </head>
 <body>
     <%- include('header'); -%>
-    <h1><a href="/db">Collection</a>: <%- collection.friendlyName %> : Count(<%- `${attribute}`%>)</h1>
+    <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
     <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> | mean: <%= statistics.mean.toFixed(4) %> | stdev: <%= statistics.stdev.toFixed(4) %> | confidence interval: [<%= (statistics.mean-statistics.confidence).toFixed(4) %>, <%= (statistics.mean+statistics.confidence).toFixed(4) %>]</div>
     <div style="display: flex;">
         <div style="flex: 50%;">

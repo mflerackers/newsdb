@@ -204,6 +204,80 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     });
 
+    router.get('/:name/list/:param', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return console.log(`${req.params.name} was not in definitions`);
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return console.log(`${req.session.userId} was not in the users of req.params.name`);
+        }
+
+        let name = req.params.param;
+        db.collection(req.params.name).distinct(name, (err, result) => {
+            if (err) return console.log(err);
+            result = result.filter(article => article && article._id != "");
+            result.sort();
+            res.render('list.ejs', {
+                articles:result, 
+                attribute:name, 
+                title:`${collection.friendlyName}.distinct(${name})`,
+                query:`distinct(${name})`,
+                collection:collection,
+                queryNames:queryNames,
+                fieldNames:fieldNames,
+                authenticated: true
+            });
+        });
+    })
+
+    router.get('/:name/list/:param/:value', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return console.log(`${req.params.name} was not in definitions`);
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return console.log(`${req.session.userId} was not in the users of req.params.name`);
+        }
+
+        let name = req.params.param;
+        let aggregate = [];
+        /*if (name.startsWith("categories.happening")) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if (name == "categories.topics") {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if (name == "article.keywords") {
+            aggregate.push({$unwind:"$article.keywords"});
+        }*/
+        aggregate.push({$match:{[name]: req.params.value}});
+        console.log(name, req.params.value, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
+        //db.collection('thaidb').find({[name]: req.params.value}).toArray((err, result) => {
+            if (err) return console.log(err);
+            result = result.filter(article => article && article._id != "");
+            if (req.query.csv) {
+                exportCsv(definitions.thaidb.templates.csv.default, result, res);
+            }
+            else {
+                res.render('db_list.ejs', {
+                    articles:result, 
+                    title:`${name} - ${req.params.value}`,
+                    query:`filter(${name}:${req.params.value})`,
+                    collection:collection,
+                    queryNames:queryNames,
+                    fieldNames:fieldNames,
+                    authenticated: true
+                });
+            }
+        });
+    })
+
     router.post('/:name/upload', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
@@ -300,7 +374,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     count:count,
                     dbName:req.params.name,
                     attribute:req.params.param, 
-                    title:`Count by ${req.params.name}`, 
+                    title:`${req.params.name}.count(${req.params.param})`, 
+                    query:`count(${req.params.param})`,
                     statistics:statistics,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
@@ -344,7 +419,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             else {
                 res.render('db_list.ejs', {
                     articles:result, 
-                    title:`${collection.friendlyName} - ${req.params.param} - ${req.params.value}`,
+                    title:`${req.params.name}.filter(${req.params.param}:${req.params.value}`,
                     query: `filter(${req.params.param}:${req.params.value})`,
                     collection: collection,
                     queryNames:queryNames,
@@ -472,6 +547,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     articles:articles, 
                     count:count,
                     dbName:req.params.name,
+                    title:`${req.params.name}.group(${req.params.first}, ${req.params.second})`,
+                    query:`group(${req.params.first}, ${req.params.second})`,
                     first:req.params.first, 
                     second:req.params.second, 
                     labels:labels, 
@@ -503,8 +580,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             if (err) return console.log(err);
             res.render('db_list.ejs', {
                 articles:result, 
-                title:`${collection.friendlyName} - Group(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
-                query: `filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
+                title:`${req.params.name}.filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
+                query:`filter(${req.params.first}:${req.params.valueFirst}, ${req.params.second}:${req.params.valueSecond})`,
                 collection: collection,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
@@ -552,7 +629,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 attribute:req.params.param, 
                 value:req.params.value,
                 collection: collection,
-                title:`Map where ${req.params.param} is ${req.params.value}`,
+                title:`${req.params.name}.map(${req.params.param}, ${req.params.value})`,
+                query:`map(${req.params.param}, ${req.params.value})`,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
                 authenticated: true,
@@ -579,8 +657,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 articles:result, 
                 attribute:req.params.name, 
                 collection:collection,
-                title:req.params.name,
-                query: `filter(abstract contains [${req.query.query.split(" ").filter(v=>v).join(",")}])`,
+                title:`${req.params.name}.filter(abstract contains [${req.query.query.split(" ").filter(v=>v).join(",")}])`,
+                query:`filter(abstract contains [${req.query.query.split(" ").filter(v=>v).join(",")}])`,
                 queryNames:queryNames,
                 fieldNames:fieldNames,
                 authenticated: true
