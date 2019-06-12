@@ -216,9 +216,29 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
 
         let name = req.params.param;
-        db.collection(req.params.name).distinct(name, (err, result) => {
+        //db.collection(req.params.name).distinct(name, (err, result) => {
+        let group = req.params.param;
+        let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
+        if (group.startsWith("categories.happening")) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if (group == "categories.topics") {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if (group == "article.keywords") {
+            aggregate.push({$unwind:"$article.keywords"});
+        }
+        if (group.startsWith("categories.people")) {
+            aggregate.push({$unwind:"$categories.people"});
+        }
+        group = "$" + group;
+        aggregate.push({ $group : { _id : group } });
+        console.log(group, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
             if (err) return console.log(err);
             result = result.filter(article => article && article._id != "");
+            result = result.map(v=>v._id)
             result.sort();
             res.render('list.ejs', {
                 articles:result, 
@@ -246,6 +266,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         let name = req.params.param;
         let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
         /*if (name.startsWith("categories.happening")) {
             aggregate.push({$unwind:"$categories.happening"});
         }
@@ -338,6 +359,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         let group = req.params.param;
         let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
         if (group.startsWith("categories.happening")) {
             aggregate.push({$unwind:"$categories.happening"});
         }
@@ -355,7 +377,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         console.log(group, aggregate);
         db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
             if (err) return console.log(err)
-            result = result.filter(article => article._id && article._id != "");
+            //result = result.filter(article => article._id && article._id != "");
             let articles = result.map(article => ({name:article._id, count:article.count}));
             let count = result.map(article => article.count);
             let statistics = { stdev: stats.stdevp(count), mean: stats.meanp(count), confidence:stats.confidence(0.05, stats.stdevp(count), count.length) };
@@ -398,10 +420,11 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         let name = req.params.param;
         let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
         /*if (name.startsWith("categories.happening")) {
             aggregate.push({$unwind:"$categories.happening"});
         }
-        if (name == "categories.topics") {
+        /*if (name == "categories.topics") {
             aggregate.push({$unwind:"$categories.topics"});
         }
         if (name == "article.keywords") {
@@ -444,6 +467,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         let firstGroup = req.params.first;
         let secondGroup = req.params.second;
         let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
         if ([firstGroup, secondGroup].some(name => name.startsWith("categories.happening"))) {
             aggregate.push({$unwind:"$categories.happening"});
         }
@@ -576,7 +600,28 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         let nameFirst = req.params.first;
         let nameSecond = req.params.second;
-        db.collection(req.params.name).find({[nameFirst]: req.params.valueFirst, [nameSecond]: req.params.valueSecond}).toArray((err, result) => {
+        //db.collection(req.params.name).find({[nameFirst]: req.params.valueFirst, [nameSecond]: req.params.valueSecond}).toArray((err, result) => {
+        let firstGroup = req.params.first;
+        let secondGroup = req.params.second;
+        let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.happening"))) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.topics"))) {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("article.keywords"))) {
+            aggregate.push({$unwind:"$article.keywords"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.people"))) {
+            aggregate.push({$unwind:"$categories.people"});
+        }
+        firstGroup = "$" + firstGroup;
+        secondGroup = "$" + secondGroup;
+        aggregate.push({$match:{[nameFirst]: req.params.valueFirst, [nameSecond]: req.params.valueSecond}});
+        console.log(firstGroup, secondGroup, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
             if (err) return console.log(err);
             res.render('db_list.ejs', {
                 articles:result, 
@@ -603,6 +648,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
 
         let group = req.params.param;
         let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
         if ([group].some(name => name.startsWith("categories.happening"))) {
             aggregate.push({$unwind:"$categories.happening"});
         }
