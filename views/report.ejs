@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThaiDB : <%- title %></title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body>
+    <%- include('header'); -%>
+    <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a> <%- unit %> report</h1>
+    <div><a href="/db/<%- collection.name %>/report/weekly">Weekly</a> | <a href="/db/<%- collection.name %>/report/monthly">Monthly</a> | <a href="/db/<%- collection.name %>/report/yearly">Yearly</a></div>
+    <div><%= articles.length %> groups <%= articles.reduce((a,v)=>a+v.count, 0) %> results</div>
+    <table>
+        <% var period, year %>
+        <% var units = { yearly: "Year", monthly: "Month", weekly: "Week" } %>
+        <% for(var i=0; i<articles.length; i++) {%>
+        <% if (articles[i]._id.year != year || articles[i]._id.period != period) { %>
+        <% if (period) { %></ul><% } %>
+        <tr><th colspan=2 style="background-color:#4eb5f1; color:white;"><%- unit !== "yearly" ? articles[i]._id.year : "" %> <%- units[unit] %> <%- articles[i]._id.period %></th></tr>
+        <% year = articles[i]._id.year; period = articles[i]._id.period }%>
+        <tr><td><%= articles[i]._id.user %></td><td><%= articles[i].count %></td></tr>
+        <% } %>
+    </table>
+</body>
+</html>
