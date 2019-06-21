@@ -712,6 +712,78 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     })
 
+    router.get('/:name/report', function(req, res) {
+        res.redirect(`/db/${req.params.name}/report/weekly`)
+    })
+
+    router.get('/:name/report/:by', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        let aggregate = [];
+        
+        // We only need the creation date and user
+        aggregate.push({ $project: 
+            { 
+                _id: 1,
+                created: { $toDate: "$_id" },
+                userId: 1
+            }
+        });
+        // Lookup the user in users by userId
+        aggregate.push({"$addFields": { "userId": { "$toObjectId": "$userId" }}})
+        aggregate.push({ $lookup:
+            {
+                "from": 'users',
+                "localField": 'userId',
+                "foreignField": '_id',
+                "as": 'user'
+            }
+        })
+        aggregate.push({ $unwind: "$user" })
+        // Group by time period
+        let period = { $week: "$created" }
+        if (req.params.by === "monthly") {
+            period = { $month: "$created" }
+        }
+        else if (req.params.by === "yearly") {
+            period = { $year: "$created" }
+        }
+        aggregate.push({ $group: 
+            {
+                _id: {
+                    year: { $year: "$created" },
+                    period: period,
+                    user: "$user.name"
+                },
+                count: { $sum: 1 }
+            }
+        });
+        // Sort
+        aggregate.push({ $sort: { "_id.year": -1, "_id.period": -1 } });
+        console.log(period, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
+            if (err) return console.log(err)
+            res.render('report.ejs', {
+                articles:result, 
+                unit:req.params.by,
+                title:`Report ${collection.friendlyName} by ${req.params.by}`,
+                query:`Report ${collection.friendlyName} by ${req.params.by}`,
+                collection:collection,
+                queryNames:queryNames,
+                fieldNames:fieldNames,
+                authenticated: true
+            });
+        });
+    })
+
     return router
 }
 
