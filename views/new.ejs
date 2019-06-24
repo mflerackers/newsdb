@@ -66,6 +66,7 @@
         control.setAttribute("name", name);
         control.classList.add(name);
         control.value = value || "";
+        control.rows = 4;
         li.appendChild(control);
         parent.appendChild(li);
         return li;
