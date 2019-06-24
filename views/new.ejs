@@ -56,6 +56,20 @@
         parent.appendChild(li);
         return li;
     }
+    function addTextArea(parent, labelText, name, value, type) {
+        let li = document.createElement("li");
+        let label = document.createElement("label");
+        label.setAttribute("for", name);
+        label.innerText = labelText;
+        li.appendChild(label);
+        let control = document.createElement("textarea");
+        control.setAttribute("name", name);
+        control.classList.add(name);
+        control.value = value || "";
+        li.appendChild(control);
+        parent.appendChild(li);
+        return li;
+    }
     function fillSelect(select, options, valueFor) {
         if (!options)
             return;
@@ -540,7 +554,7 @@
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
-                    addText(group, "Name", "happening-name", happening ? happening.name : "");
+                    addTextArea(group, "Name", "happening-name", happening ? happening.name : "");
                     addSelect(group, "External factor", "happening-external-factor", [
                         "",
                         "Architecture",
