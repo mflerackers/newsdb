@@ -56,6 +56,21 @@
         parent.appendChild(li);
         return li;
     }
+    function addTextArea(parent, labelText, name, value, type) {
+        let li = document.createElement("li");
+        let label = document.createElement("label");
+        label.setAttribute("for", name);
+        label.innerText = labelText;
+        li.appendChild(label);
+        let control = document.createElement("textarea");
+        control.setAttribute("name", name);
+        control.classList.add(name);
+        control.value = value || "";
+        control.rows = 4;
+        li.appendChild(control);
+        parent.appendChild(li);
+        return li;
+    }
     function fillSelect(select, options, valueFor) {
         if (!options)
             return;
@@ -540,7 +555,7 @@
                     });
                     legend.appendChild(button);
                     group.appendChild(legend);
-                    addText(group, "Name", "happening-name", happening ? happening.name : "");
+                    addTextArea(group, "Name", "happening-name", happening ? happening.name : "");
                     addSelect(group, "External factor", "happening-external-factor", [
                         "",
                         "Architecture",
@@ -1233,8 +1248,8 @@
             <li><label for="comments">Comments</label> <textarea name="comments" id="root.comments"></textarea></li>
             <fieldset style="margin-top: 20px;"><legend>Article</legend>
                 <ul>
-                    <li><label for="text">Text</label> <textarea name="text" id="root.article.text"></textarea></li>
-                    <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract"></textarea></li>
+                    <li><label for="text">Text</label> <textarea name="text" id="root.article.text" rows="4"></textarea></li>
+                    <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract" rows="4"></textarea></li>
                     <li><label for="keywords">Keywords</label> <input name="keywords" id="root.article.keywords"/></li>
                     <li><label for="keywords-thai">Keywords (Thai)</label> <input name="keywords-thai" id="root.article.keywords-thai"/></li>
                 </ul>
