@@ -107,7 +107,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             collection: collection,
             queryNames:queryNames,
             fieldNames:fieldNames,
-            authenticated: true
+            authenticated: true,
+            admin:req.session.admin
         })
     })
 
@@ -130,11 +131,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             }
             res.render('new.ejs', {
                 name: req.params.name,
-                data:result,
+                data: result,
                 collection: collection,
-                queryNames:queryNames,
-                fieldNames:fieldNames,
-                authenticated: true
+                queryNames: queryNames,
+                fieldNames: fieldNames,
+                authenticated: true,
+                admin: req.session.admin
             });
         });
     });
@@ -216,7 +218,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     articles:result,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
-                    authenticated: true
+                    authenticated: true,
+                    sort: sort,
+                    order: order
                 });
             }
         });
@@ -392,7 +396,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         group = "$" + group;
         aggregate.push({$sortByCount:group});
-        console.log(group, aggregate);
+        console.log(group, JSON.stringify(aggregate));
         db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
             if (err) return console.log(err)
             //result = result.filter(article => article._id && article._id != "");

@@ -41,6 +41,10 @@
     <%- include('header'); -%>
     <h1><a href="/db">Collection</a>: <a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a></h1>
     <script>
+    let isDirty = false
+    function setDirty() {
+        isDirty = true
+    }
     function addText(parent, labelText, name, value, type) {
         let li = document.createElement("li");
         let label = document.createElement("label");
@@ -234,7 +238,7 @@
     <div class="container">
     <fieldset style="margin-top: 20px;"><legend>General</legend>
     <ul>
-        <li><label for="id">Id</label> <input name="id" id="root.id"/></li>
+        <li><label for="id">Id</label> <input name="id" id="root.id" required/></li>
         <!--<li><label for="relevance">Relevance</label> 
             <select name="relevance" id="root.relevance">
                 <option>beauty/cleanliness</option>
@@ -262,6 +266,7 @@
         <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
         <li><label for="location">Location</label> 
             <select name="location" id="root.bibliography.location">
+                <option></option>
                 <option>Left</option>
                 <option>Right</option>
                 <option>Upper</option>
@@ -280,6 +285,7 @@
         <ul>
             <li><label for="size-headline">Headline</label>
                 <select name="size-headline" id="root.bibliography.size.headline">
+                    <option></option>
                     <option>Large</option>
                     <option>Medium</option>
                     <option>Small</option>
@@ -310,6 +316,7 @@
         </li>
         <li><label for="type">Type</label> 
             <select name="type" id="root.bibliography.type">
+                <option></option>
                 <option>Advertisement</option>
                 <option>Editorial</option>
                 <option>Interview</option>
@@ -366,14 +373,15 @@
         <fieldset style="margin-top: 20px;"><legend>Focus</legend>
             <ul>
                 <li><label for="focus-topic">Topic</label> 
-                    <select name="focus-topic" id="root.categories.focus.topic">
+                    <select name="focus-topic" id="root.categories.focus.topic" required>
+                        <option></option>
                         <option>Event/Happening</option>
                         <option>People</option>
                         <option>Product (service)</option>
                     </select>
                 </li>
                 <li><label for="focus-level">Level</label> 
-                    <select name="focus-level" id="root.categories.focus.level">
+                    <select name="focus-level" id="root.categories.focus.level" required>
                         <option></option>   
                         <option>Local</option>
                         <option>National</option>     
@@ -918,6 +926,7 @@
                     legend.appendChild(button);
                     group.appendChild(legend);
                     let kindPart = addSelectOther(group, "Kind", "product-kind", [
+                        "",
                         "personal hygiene/beauty product",
                         "house cleaning detergent",
                         "food/supplement",
@@ -1221,7 +1230,7 @@
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Context</legend>
             <ul>
-                <li><select name="category" id="root.newCategory">
+                <li><select name="category" id="root.newCategory" required>
                         <option></option>
                         <option>Cleaning event</option>
                         <option>Cleanliness and health advice</option>
@@ -1329,6 +1338,16 @@
             document.getElementById("save").disabled = false;
             console.error('Error:', error);
         });
+    });
+    const inputs = [...document.getElementsByTagName("input")]
+    inputs.forEach(input=>{input.addEventListener("change", e=>{setDirty()})})
+    const selects = [...document.getElementsByTagName("select")]
+    selects.forEach(select=>{console.log(select);select.addEventListener("change", e=>{setDirty()})})
+    window.addEventListener('beforeunload', e=>{
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
     </script>
     </div>
