@@ -90,6 +90,7 @@ input {
     border: 1px solid hsl(30, 76%, 10%);
     padding: 0.3em;
     border-radius: 0.2em;
+    outline: none;
 }
 
 input:placeholder-shown {
@@ -97,16 +98,16 @@ input:placeholder-shown {
 }
 
 input:focus {
-    outline: none;
     box-shadow: 0 0 5px rgba(81, 203, 238, 1);
 }
 
 input:invalid {
-    border-color: hsl(0, 76%, 50%);
+    box-shadow: none;
+    border-color: hsl(0, 70%, 58%);
 }
 
 input:focus:invalid {
-    box-shadow: 0 0 5px hsl(0, 76%, 50%);
+    box-shadow: 0 0 5px hsl(0, 70%, 58%);
 }
 
 input:disabled {
@@ -118,13 +119,14 @@ select {
     padding: 0.3em;
     border-radius: 0.2em;
     background-color: white;
+    outline: none;
 }
 
-select:not(:valid) {
-    border-color: hsl(0, 76%, 50%);
+select:invalid {
+    box-shadow: none;
+    border-color: hsl(0, 70%, 58%);
 }
 
 select:focus:not(:valid) {
-    outline: none;
-    box-shadow: 0 0 5px hsl(0, 76%, 50%);
+    box-shadow: 0 0 5px hsl(0, 70%, 58%);
 }
