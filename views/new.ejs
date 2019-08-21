@@ -41,7 +41,11 @@
     <%- include('header'); -%>
     <h1><a href="/db">Collection</a>: <a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a></h1>
     <script>
-    function addText(parent, labelText, name, value, type) {
+    let isDirty = false
+    function setDirty() {
+        isDirty = true
+    }
+    function addText(parent, labelText, name, value, type, required) {
         let li = document.createElement("li");
         let label = document.createElement("label");
         label.setAttribute("for", name);
@@ -50,6 +54,9 @@
         let control = document.createElement("input");
         control.setAttribute("type", type || "text");
         control.setAttribute("name", name);
+        if (required) {
+            control.required = true
+        }
         control.classList.add(name);
         control.value = value || "";
         li.appendChild(control);
@@ -88,7 +95,7 @@
             select.setOptions(values, options);
         }
     }
-    function addSelect(parent, labelText, name, options, value) {
+    function addSelect(parent, labelText, name, options, value, required) {
         li = document.createElement("li");
         if (labelText) {
             label = document.createElement("label");
@@ -98,6 +105,9 @@
         }
         control = document.createElement("select");
         control.setAttribute("name", name);
+        if (required) {
+            control.required = true
+        }
         control.classList.add(name);
         fillSelect(control, options);
         if (value) {
@@ -234,7 +244,7 @@
     <div class="container">
     <fieldset style="margin-top: 20px;"><legend>General</legend>
     <ul>
-        <li><label for="id">Id</label> <input name="id" id="root.id"/></li>
+        <li><label for="id">Id</label> <input name="id" id="root.id" required/></li>
         <!--<li><label for="relevance">Relevance</label> 
             <select name="relevance" id="root.relevance">
                 <option>beauty/cleanliness</option>
@@ -250,23 +260,26 @@
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
         <li><label for="chosen">Articles chosen</label> <input name="chosen" id="root.bibliography.chosen" disabled/></li>
-        <li><label for="total">Articles total</label> <input name="total" id="root.bibliography.total"/></li>
-        <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline"/></li>
-        <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai"/></li>
-        <li><label for="newspaper">Newspaper</label> <select name="newspaper" id="root.bibliography.newspaper">
+        <li><label for="total">Articles total</label> <input name="total" id="root.bibliography.total" required/></li>
+        <li><label for="headline">Headline</label> <input name="headline" id="root.bibliography.headline" required/></li>
+        <li><label for="headline-thai">Headline (Thai)</label> <input name="headline-thai" id="root.bibliography.headline-thai" required/></li>
+        <li><label for="newspaper">Newspaper</label> <select name="newspaper" id="root.bibliography.newspaper" required>
+            <option></option>
             <option>daily news</option>
             <option>thai rath</option>
         </select></li>
-        <li><label for="date">Date</label> <input type="date" name="date" id="root.bibliography.date"/></li>
-        <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication"/></li>
-        <li><label for="page">Page</label> <input name="page" id="root.bibliography.page"/></li>
+        <li><label for="date">Date</label> <input type="date" name="date" id="root.bibliography.date" required/></li>
+        <li><label for="publication">Publication</label> <input name="publication" id="root.bibliography.publication" required/></li>
+        <li><label for="page">Page</label> <input name="page" id="root.bibliography.page" required/></li>
         <li><label for="location">Location</label> 
-            <select name="location" id="root.bibliography.location">
+            <select name="location" id="root.bibliography.location" required>
+                <option></option>
                 <option>Left</option>
                 <option>Right</option>
                 <option>Upper</option>
                 <option>Lower</option>
                 <option>Full page</option>
+                <option>More than 1 page</option>
                 <option>Lower left</option>
                 <option>Lower right</option>
                 <option>Lower-half</option>
@@ -279,15 +292,16 @@
         <fieldset style="margin-top: 20px;"><legend>Size</legend>
         <ul>
             <li><label for="size-headline">Headline</label>
-                <select name="size-headline" id="root.bibliography.size.headline">
+                <select name="size-headline" id="root.bibliography.size.headline" required>
+                    <option></option>
                     <option>Large</option>
                     <option>Medium</option>
                     <option>Small</option>
                 </select>
             </li>
-            <li><label for="size-colinch">Col-inch</label> <input name="size-colinch" id="root.bibliography.size.col-inch"/></li>
+            <li><label for="size-colinch">Col-inch</label> <input name="size-colinch" id="root.bibliography.size.col-inch" required/></li>
             <li><label for="size-article">Article</label>
-                <select name="size-article" id="root.bibliography.size.article">
+                <select name="size-article" id="root.bibliography.size.article" required>
                     <option></option>
                     <option>Full page</option>
                     <option>More than half of the page</option>
@@ -303,13 +317,15 @@
         <script>
         </script>
         <li><label for="photo">Photo</label>
-            <select name="photo" id="root.bibliography.photo">
+            <select name="photo" id="root.bibliography.photo" required>
+                <option></option>
                 <option>yes</option>
                 <option>no</option>
             </select>
         </li>
         <li><label for="type">Type</label> 
-            <select name="type" id="root.bibliography.type">
+            <select name="type" id="root.bibliography.type" required>
+                <option></option>
                 <option>Advertisement</option>
                 <option>Editorial</option>
                 <option>Interview</option>
@@ -366,14 +382,15 @@
         <fieldset style="margin-top: 20px;"><legend>Focus</legend>
             <ul>
                 <li><label for="focus-topic">Topic</label> 
-                    <select name="focus-topic" id="root.categories.focus.topic">
+                    <select name="focus-topic" id="root.categories.focus.topic" required>
+                        <option></option>
                         <option>Event/Happening</option>
                         <option>People</option>
                         <option>Product (service)</option>
                     </select>
                 </li>
                 <li><label for="focus-level">Level</label> 
-                    <select name="focus-level" id="root.categories.focus.level">
+                    <select name="focus-level" id="root.categories.focus.level" required>
                         <option></option>   
                         <option>Local</option>
                         <option>National</option>     
@@ -819,8 +836,7 @@
                         "College/young adult (15-24)",
                         "Adult (25-50)",
                         "Pre-elderly (51-60)",
-                        "Elderly (60~)",
-                        "Unspecified"
+                        "Elderly (60~)"
                     ], person ? translateAge(person.age) : "");
                     addText(group, "Age specific", "person-age-specific", person ? person["age-specific"] : "");
                     addText(group, "Role", "person-role", person ? person.role : "");
@@ -875,7 +891,7 @@
             <script>
                 function appendOrganization(organization) {
                     let organizations = document.getElementById("organizations");
-                    let li = addText(organizations, "Name", "organization-name", organization ? organization.name : "");
+                    let li = addText(organizations, "Name", "organization-name", organization ? organization.name : "", undefined, true);
                     let button = document.createElement("button");
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
@@ -918,6 +934,7 @@
                     legend.appendChild(button);
                     group.appendChild(legend);
                     let kindPart = addSelectOther(group, "Kind", "product-kind", [
+                        "",
                         "personal hygiene/beauty product",
                         "house cleaning detergent",
                         "food/supplement",
@@ -1119,8 +1136,7 @@
                         "College/young adult (15-24)",
                         "Adult (25-50)",
                         "Pre-elderly (51-60)",
-                        "Elderly (60~)",
-                        "Unspecified"
+                        "Elderly (60~)"
                     ], product ? translateAge(product["target-age"]) : "");
                     products.appendChild(productContainer);
 
@@ -1180,6 +1196,7 @@
                 function appendTopic(topic) {
                     let topics = document.getElementById("topics");
                     let li = addSelect(topics, null, "topic", [
+                        "",
                         "Community",
                         "Education",
                         "Gender and ethnicity",
@@ -1194,7 +1211,7 @@
                         "Entertainment/Sports",
                         "Environment",
                         "Other (not mentioned above)"
-                    ], topic);
+                    ], topic, true);
                     let button = document.createElement("button");
                     button.classList.add("delete");
                     button.innerHTML = "&times;";
@@ -1221,7 +1238,7 @@
         </fieldset>
         <fieldset style="margin-top: 20px;"><legend>Context</legend>
             <ul>
-                <li><select name="category" id="root.newCategory">
+                <li><select name="category" id="root.newCategory" required>
                         <option></option>
                         <option>Cleaning event</option>
                         <option>Cleanliness and health advice</option>
@@ -1250,9 +1267,9 @@
             <fieldset style="margin-top: 20px;"><legend>Article</legend>
                 <ul>
                     <li><label for="text">Text</label> <textarea name="text" id="root.article.text" rows="4"></textarea></li>
-                    <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract" rows="4"></textarea></li>
-                    <li><label for="keywords">Keywords</label> <input name="keywords" id="root.article.keywords"/></li>
-                    <li><label for="keywords-thai">Keywords (Thai)</label> <input name="keywords-thai" id="root.article.keywords-thai"/></li>
+                    <li><label for="abstract">Abstract</label> <textarea name="abstract" id="root.article.abstract" rows="4" required></textarea></li>
+                    <li><label for="keywords">Keywords</label> <input name="keywords" id="root.article.keywords" required/></li>
+                    <li><label for="keywords-thai">Keywords (Thai)</label> <input name="keywords-thai" id="root.article.keywords-thai" required/></li>
                 </ul>
             </fieldset>
         </ul>
@@ -1329,6 +1346,16 @@
             document.getElementById("save").disabled = false;
             console.error('Error:', error);
         });
+    });
+    const inputs = [...document.getElementsByTagName("input")]
+    inputs.forEach(input=>{input.addEventListener("change", e=>{setDirty()})})
+    const selects = [...document.getElementsByTagName("select")]
+    selects.forEach(select=>{console.log(select);select.addEventListener("change", e=>{setDirty()})})
+    window.addEventListener('beforeunload', e=>{
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
     </script>
     </div>

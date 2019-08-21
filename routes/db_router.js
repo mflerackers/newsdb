@@ -107,7 +107,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             collection: collection,
             queryNames:queryNames,
             fieldNames:fieldNames,
-            authenticated: true
+            authenticated: true,
+            admin:req.session.admin
         })
     })
 
@@ -130,11 +131,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             }
             res.render('new.ejs', {
                 name: req.params.name,
-                data:result,
+                data: result,
                 collection: collection,
-                queryNames:queryNames,
-                fieldNames:fieldNames,
-                authenticated: true
+                queryNames: queryNames,
+                fieldNames: fieldNames,
+                authenticated: true,
+                admin: req.session.admin
             });
         });
     });
@@ -151,12 +153,19 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         
         //db.collection(req.params.name).find(req.session.admin ? {} : {userId: req.session.userId}).sort({modified:-1}).toArray((err, result) => {
+        let sort = "modified"
+        let order = -1
         let stages = []
         let match = req.session.admin ? {} : {userId: req.session.userId}
         stages.push({"$match": match})
         if (!req.query.csv) {
             // Change string to id
-            stages.push({"$addFields": { "userId": { "$toObjectId": "$userId" }}})
+            stages.push({
+                "$addFields": {
+                    "userId": { "$toObjectId": "$userId" },
+                    "created": { "$toDate": "$_id" }
+                }
+            })
             // Do a join with the user table
             stages.push({"$lookup":{
                 "from": 'users',
@@ -175,14 +184,25 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 "bibliography":{"headline":1},
                 "article":{"abstract":1},
                 "user":{"name":1},
-                "modified":1
+                "modified":1,
+                "created":1
             }})
             // Sort by modified
-            stages.push({"$sort":{"modified":-1}})
+            const validSort = ["modified", "created", "id", "user"]
+            if (validSort.includes(req.query.sort)) {
+                sort = req.query.sort ? req.query.sort : "modified"
+                order = req.query.order === "ascending" ? 1 : -1
+            }
+            const map = {}
+            map[sort] = order
+            stages.push({"$sort":map})
         }
         else {
+            sort = "id"
+            order = 1
             stages.push({"$sort":{"id":1}})
         }
+        console.log(JSON.stringify(stages))
         db.collection(req.params.name).aggregate(stages).toArray((err, result) => {
             if (err) {
                 res.status(404).send({success:false})
@@ -198,7 +218,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     articles:result,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
-                    authenticated: true
+                    authenticated: true,
+                    sort: sort,
+                    order: order
                 });
             }
         });
@@ -374,7 +396,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         group = "$" + group;
         aggregate.push({$sortByCount:group});
-        console.log(group, aggregate);
+        console.log(group, JSON.stringify(aggregate));
         db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
             if (err) return console.log(err)
             //result = result.filter(article => article._id && article._id != "");

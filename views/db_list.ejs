@@ -11,10 +11,45 @@
     <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
     <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button></div>
     <ul class="articles">
-        <li class="article">
-            <a href="/db/<%- collection.name %>/new">
-            <span>Create new</span>
-            </a>
+        <li class="article" style="padding-bottom:25px">
+            <a href="/db/<%- collection.name %>/new" class="button"><span>Create new</span></a>
+            Sort by 
+            <% if (locals.sort === "created") { %>
+                <% if (locals.order === 1) { %>
+                    <a href="/db/<%- collection.name %>/list?sort=created" class="button selected"><span>Created ⬇</span></a>
+                <% } else { %>
+                    <a href="/db/<%- collection.name %>/list?sort=created&order=ascending" class="button selected"><span>Created ⬆</span></a>
+                <% } %>
+            <% } else { %>
+                <a href="/db/<%- collection.name %>/list?sort=created" class="button"><span>Created ⬍</span></a>
+            <% } %>
+            <% if (locals.sort === "modified") { %>
+                <% if (locals.order === 1) { %>
+                    <a href="/db/<%- collection.name %>/list?sort=modified" class="button selected"><span>Modified ⬇</span></a>
+                <% } else { %>
+                    <a href="/db/<%- collection.name %>/list?sort=modified&order=ascending" class="button selected"><span>Modified ⬆</span></a>
+                <% } %>
+            <% } else { %>
+                <a href="/db/<%- collection.name %>/list?sort=modified" class="button"><span>Modified ⬍</span></a>
+            <% } %>
+            <% if (locals.sort === "id") { %>
+                <% if (locals.order === 1) { %>
+                    <a href="/db/<%- collection.name %>/list?sort=id" class="button selected"><span>Id ⬇</span></a>
+                <% } else { %>
+                    <a href="/db/<%- collection.name %>/list?sort=id&order=ascending" class="button selected"><span>Id ⬆</span></a>
+                <% } %>
+            <% } else { %>
+                <a href="/db/<%- collection.name %>/list?sort=id" class="button"><span>Id ⬍</span></a>
+            <% } %>
+            <% if (locals.sort === "user") { %>
+                <% if (locals.order === 1) { %>
+                    <a href="/db/<%- collection.name %>/list?sort=user" class="button selected"><span>User ⬇</span></a>
+                <% } else { %>
+                    <a href="/db/<%- collection.name %>/list?sort=user&order=ascending" class="button selected"><span>User ⬆</span></a>
+                <% } %>
+            <% } else { %>
+                <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>User ⬍</span></a>
+            <% } %>
         </li>
         <% for(var i=0; i<articles.length; i++) {%>
         <li class="article">
