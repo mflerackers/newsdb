@@ -185,10 +185,11 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 "article":{"abstract":1},
                 "user":{"name":1},
                 "modified":1,
-                "created":1
+                "created":1,
+                "draft":1
             }})
             // Sort by modified
-            const validSort = ["modified", "created", "id", "user"]
+            const validSort = ["modified", "created", "id", "user", "draft"]
             if (validSort.includes(req.query.sort)) {
                 sort = req.query.sort ? req.query.sort : "modified"
                 order = req.query.order === "ascending" ? 1 : -1
