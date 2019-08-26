@@ -1358,7 +1358,7 @@
     const inputs = [...document.getElementsByTagName("input")]
     inputs.forEach(input=>{input.addEventListener("change", e=>{setDirty()})})
     const selects = [...document.getElementsByTagName("select")]
-    selects.forEach(select=>{console.log(select);select.addEventListener("change", e=>{setDirty()})})
+    selects.forEach(select=>{select.addEventListener("change", e=>{setDirty()})})
     window.addEventListener('beforeunload', e=>{
         if (isDirty) {
             e.preventDefault();
