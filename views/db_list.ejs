@@ -43,12 +43,12 @@
             <% } %>
             <% if (locals.sort === "user") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=user" class="button selected"><span>User ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=user" class="button selected"><span>Creator ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=user&order=ascending" class="button selected"><span>User ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=user&order=ascending" class="button selected"><span>Creator ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>User ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>Creator ⬍</span></a>
             <% } %>
             <% if (locals.sort === "draft") { %>
                 <% if (locals.order === 1) { %>
