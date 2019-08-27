@@ -16,21 +16,21 @@
             Sort by 
             <% if (locals.sort === "created") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=created" class="button selected"><span>Created ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=created" class="button selected"><span>Date Created ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=created&order=ascending" class="button selected"><span>Created ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=created&order=ascending" class="button selected"><span>Date Created ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=created" class="button"><span>Created ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=created" class="button"><span>Date Created ⬍</span></a>
             <% } %>
             <% if (locals.sort === "modified") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=modified" class="button selected"><span>Modified ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=modified" class="button selected"><span>Date Modified ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=modified&order=ascending" class="button selected"><span>Modified ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=modified&order=ascending" class="button selected"><span>Date Modified ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=modified" class="button"><span>Modified ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=modified" class="button"><span>Date Modified ⬍</span></a>
             <% } %>
             <% if (locals.sort === "id") { %>
                 <% if (locals.order === 1) { %>
@@ -43,12 +43,21 @@
             <% } %>
             <% if (locals.sort === "user") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=user" class="button selected"><span>User ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=user" class="button selected"><span>Creator ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=user&order=ascending" class="button selected"><span>User ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=user&order=ascending" class="button selected"><span>Creator ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>User ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>Creator ⬍</span></a>
+            <% } %>
+            <% if (locals.sort === "draft") { %>
+                <% if (locals.order === 1) { %>
+                    <a href="/db/<%- collection.name %>/list?sort=draft" class="button selected"><span>Draft ⬇</span></a>
+                <% } else { %>
+                    <a href="/db/<%- collection.name %>/list?sort=draft&order=ascending" class="button selected"><span>Draft ⬆</span></a>
+                <% } %>
+            <% } else { %>
+                <a href="/db/<%- collection.name %>/list?sort=draft" class="button"><span>Draft ⬍</span></a>
             <% } %>
         </li>
         <% for(var i=0; i<articles.length; i++) {%>
@@ -61,7 +70,7 @@
             <a href="/db/<%- collection.name %>/edit/<%= encodeURIComponent(articles[i].id) %>">
             <span><%= articles[i].id %></span>
             </a>
-            <%= articles[i].bibliography.headline %> <% if (articles[i].user) { %><span style="background-color: lightblue; padding: 2px; border-radius: 3px;"> <%= articles[i].user.name %></span><% } %><br>
+            <%= articles[i].bibliography.headline %> <% if (articles[i].user) { %><span style="background-color: lightblue; padding: 2px; border-radius: 3px;"> <%= articles[i].user.name %></span><% } %> <% if (articles[i].draft) { %><span style="background-color: orange; padding: 2px; border-radius: 3px;"> draft</span><% } %><br>
             <span style="color:silver"><%= articles[i].article.abstract %></span>
         </li>
         <% } %>

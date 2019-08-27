@@ -26,6 +26,10 @@
             flex: 1 0 220px;
             --max-width: 400px;
         }
+        label + input[type="checkbox"] {
+            flex: 0 1 0;
+            --max-width: 400px;
+        }
         .upload-field {
             border: 1px solid silver;
             border-radius: 4px;
@@ -251,11 +255,13 @@
                 <option>other articles</option>
             </select>
         </li>-->
+        <li><label for="draft">Draft</label> <input type="checkbox" name="draft" id="root.draft" /></li>
     </ul>
     </fieldset>
     <script>
         setEditValue("root.id", data.id);
         //setSelectValue("root.relevance", data.relevance);
+        document.getElementById("root.draft").checked = data.draft;
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
@@ -1300,6 +1306,7 @@
         let data = {
             id: getEditValue("root.id"),
             //relevance: getEditValue("root.relevance"),
+            draft: document.getElementById("root.draft").checked,
             newCategory: getEditValue("root.newCategory"),
             bibliography: getBibliography(),
             categories: {
@@ -1336,21 +1343,22 @@
             }
         }).then(res => res.json())
         .then(response => {
-            //container.classList.remove('loader');
-            document.getElementById("save").disabled = false;
-            console.log('Success:', JSON.stringify(response));
-            window.location = `${prefix}/list`;
+            //container.classList.remove('loader')
+            document.getElementById("save").disabled = false
+            console.log('Success:', JSON.stringify(response))
+            isDirty = false
+            window.location = `${prefix}/list`
         })
         .catch(error => {
-            //container.classList.remove('loader');
-            document.getElementById("save").disabled = false;
-            console.error('Error:', error);
+            //container.classList.remove('loader')
+            document.getElementById("save").disabled = false
+            console.error('Error:', error)
         });
     });
     const inputs = [...document.getElementsByTagName("input")]
     inputs.forEach(input=>{input.addEventListener("change", e=>{setDirty()})})
     const selects = [...document.getElementsByTagName("select")]
-    selects.forEach(select=>{console.log(select);select.addEventListener("change", e=>{setDirty()})})
+    selects.forEach(select=>{select.addEventListener("change", e=>{setDirty()})})
     window.addEventListener('beforeunload', e=>{
         if (isDirty) {
             e.preventDefault();
