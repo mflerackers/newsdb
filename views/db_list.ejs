@@ -16,21 +16,21 @@
             Sort by 
             <% if (locals.sort === "created") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=created" class="button selected"><span>Created ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=created" class="button selected"><span>Date Created ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=created&order=ascending" class="button selected"><span>Created ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=created&order=ascending" class="button selected"><span>Date Created ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=created" class="button"><span>Created ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=created" class="button"><span>Date Created ⬍</span></a>
             <% } %>
             <% if (locals.sort === "modified") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=modified" class="button selected"><span>Modified ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=modified" class="button selected"><span>Date Modified ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=modified&order=ascending" class="button selected"><span>Modified ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=modified&order=ascending" class="button selected"><span>Date Modified ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=modified" class="button"><span>Modified ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=modified" class="button"><span>Date Modified ⬍</span></a>
             <% } %>
             <% if (locals.sort === "id") { %>
                 <% if (locals.order === 1) { %>
