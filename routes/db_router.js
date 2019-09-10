@@ -129,6 +129,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 res.status(404).send({success:false})
                 return console.log(err);
             }
+            if (result.meta && result.meta.comments) {
+                result.meta.comments.forEach(comment => {
+                    comment.owned = comment.userId == req.session.userId
+                    delete comment.userId
+                })
+            }
             res.render('new.ejs', {
                 name: req.params.name,
                 data: result,
@@ -136,10 +142,93 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 queryNames: queryNames,
                 fieldNames: fieldNames,
                 authenticated: true,
-                admin: req.session.admin
+                admin: req.session.admin,
+                userId : req.session.userId
             });
         });
     });
+
+    router.post('/:name/article/:articleId/comments/add', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        
+        const data = req.body
+        console.log("add", data)
+        if (data.text) {
+            const ObjectId = require('mongodb').ObjectID;
+            let id = new ObjectId()
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $push: { "meta.comments": {
+                    id: id,
+                    text: data.text, 
+                    userId: ObjectId(req.session.userId), 
+                    userName: req.session.name 
+                } } },
+                (err, result) => {
+                    if (err) {
+                        res.status(404).send({success:false})
+                        return console.log(err);
+                    }
+                    res.send({id:id.valueOf(), text:data.text, userName:req.session.name, owned:true})
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"Comment text is missing"})
+        }
+    })
+
+    router.post('/:name/article/:articleId/comments/remove', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+
+        const data = req.body
+        console.log("remove", data)
+        if (data.id) {
+            const ObjectId = require('mongodb').ObjectID;
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $pull: { "meta.comments": { id: ObjectId(data.id), userId: ObjectId(req.session.userId) } } },
+                (err, result) => {
+                    if (err) {
+                        res.status(404).send({success:false, message:"Failed to delete comment"})
+                        return console.log(err);
+                    }
+                    res.send({success:true})
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"Comment id is missing"})
+        }
+    })
 
     router.get('/:name/list', function(req, res) {
         if (!(req.params.name in definitions)) {

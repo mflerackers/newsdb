@@ -6,9 +6,14 @@
     <link rel="stylesheet" type="text/css" href="/style.css">
     <style>
         .container {
-            width: 80%;
-            max-width: 1200px;
+            width: 90%; 
             margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+        }
+        .form-container {
+            width: 100%;
+            padding-right: 20px;
         }
         fieldset ul li {
             padding: 5px;
@@ -35,6 +40,7 @@
             border-radius: 4px;
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="/comments.css">
     <script src="/countries.js"></script>
     <script src="/thai_province_district.js"></script>
     <script src="/upload_field.js"></script>
@@ -1366,6 +1372,12 @@
         }
     });
     </script>
+    </div>
+    <%- include("comments", { 
+        comments: (data.meta && data.meta.comments) || [], 
+        addCommentUri:`/db/${name}/article/${data.id}/comments/add`, 
+        removeCommentUri:`/db/${name}/article/${data.id}/comments/remove/`
+    }) %>
     </div>
 </body>
 </html>

@@ -25,6 +25,7 @@ function getRouter(db, transporter) {
                             console.log(req.session)
                             req.session.userId = user._id
                             req.session.admin = user.admin
+                            req.session.name = user.name
                             return res.redirect((req.body.redirect !== "/logout" ? req.body.redirect : "/db") || "/db")
                         }
                         else {
