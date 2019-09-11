@@ -1,5 +1,5 @@
 <li class="comment">
     <header><span id="user"><%= comment.userName %></span> <% if (comment.owned) { %><button
             id="delete-comment" commentId="<%- comment.id %>">X</button><% } %></header>
-    <article><%- comment.text.replace("\n", "<br>") %></article>
+    <article><%- comment.text.replace(/\n/g, "<br />") %></article>
 </li>
