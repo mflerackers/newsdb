@@ -230,6 +230,44 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
     })
 
+    router.post('/:name/article/:articleId/status', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+
+        const data = req.body
+        console.log("status", data)
+
+        if (data.status) {
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $set: { "meta.status": data.status } },
+                (err, result) => {
+                    if (err) {
+                        res.status(404).send({success:false, message:"Failed to update status"})
+                        return console.log(err);
+                    }
+                    res.send({success:true, status:data.status})
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"Status is missing"})
+        }
+    })
+
     router.get('/:name/list', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})

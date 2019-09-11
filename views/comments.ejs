@@ -4,6 +4,12 @@
 <div>
     <button id="hide-comments">Hide</button>
     <div class="comments">
+        <select id="meta-status">
+                <option value="draft">Draft</option>
+                <option value="review">In review</option>
+                <option value="incomplete">Corrections needed</option>
+                <option value="finished">Finished</option>
+        </select>
         <ul id="comment-list">
             <% comments.forEach(comment => { %>
             <%- include("comment", {comment:comment}) %>
@@ -16,6 +22,19 @@
     </div>
 </div>
 <script>
+    document.querySelector("#meta-status").addEventListener("change", e=>{
+        let metaStatus = document.querySelector("#meta-status")
+        metaStatus.disabled = true
+        post("<%- changeStatusUri %>", { status: metaStatus.value }).then(json => {
+            console.log(json)
+            //addComment(json)
+            metaStatus.value = json.status
+            metaStatus.disabled = false
+        }).catch(error => {
+            console.log(error)
+            metaStatus.disabled = false
+        })
+    })
     document.querySelector("#hide-comments").addEventListener("click", e=>{
         let container = document.querySelector("div.comments")
         if (container.hidden) {
