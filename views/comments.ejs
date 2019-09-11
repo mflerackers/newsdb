@@ -4,35 +4,37 @@
 <div>
     <button id="hide-comments">Hide</button>
     <div class="comments">
-        <select id="meta-status">
-                <option value="draft">Draft</option>
-                <option value="review">In review</option>
-                <option value="incomplete">Corrections needed</option>
-                <option value="finished">Finished</option>
+        <select id="meta-state">
+                <option value="draft" <% if (state === "draft") { %>selected<% } %>>Draft</option>
+                <option value="review" <% if (state === "review") { %>selected<% } %>>In review</option>
+                <option value="incomplete" <% if (state === "incomplete") { %>selected<% } %>>Corrections needed</option>
+                <option value="finished" <% if (state === "finished") { %>selected<% } %>>Finished</option>
         </select>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                <textarea id="comment-text" placeholder="new comment" rows=4 style="align-self: stretch;"></textarea>
+                <button id="post-comment">Post</button>
+            </div>
         <ul id="comment-list">
-            <% comments.forEach(comment => { %>
+            <% comments.reverse().forEach(comment => { %>
             <%- include("comment", {comment:comment}) %>
             <% }) %>
         </ul>
-        <div style="display: flex; flex-direction: column; align-items: flex-end;">
-            <textarea id="comment-text" placeholder="new comment" rows=4 style="align-self: stretch;"></textarea>
-            <button id="post-comment">Post</button>
-        </div>
     </div>
 </div>
 <script>
-    document.querySelector("#meta-status").addEventListener("change", e=>{
-        let metaStatus = document.querySelector("#meta-status")
-        metaStatus.disabled = true
-        post("<%- changeStatusUri %>", { status: metaStatus.value }).then(json => {
+    document.querySelector("#meta-state").addEventListener("change", e=>{
+        let metaState = document.querySelector("#meta-state")
+        metaState.disabled = true
+        post("<%- changeStateUri %>", { state: metaState.value }).then(json => {
             console.log(json)
-            //addComment(json)
-            metaStatus.value = json.status
-            metaStatus.disabled = false
+            if (json.comment) {
+                addComment(json.comment)
+            }
+            metaState.value = json.state
+            metaState.disabled = false
         }).catch(error => {
             console.log(error)
-            metaStatus.disabled = false
+            metaState.disabled = false
         })
     })
     document.querySelector("#hide-comments").addEventListener("click", e=>{
@@ -52,10 +54,16 @@
         var clone = document.importNode(template.content, true);
         clone.querySelector("#user").innerText = comment.userName
         clone.querySelector("article").innerText = comment.text
-        commentList.appendChild(clone);
+        commentList.insertBefore(clone, commentList.children[0]);
         let comments = commentList.querySelectorAll("li")
-        let lastComment = comments[comments.length - 1]
+        let lastComment = comments[0]
         let deleteComment = lastComment.querySelector("#delete-comment")
+        if ("owned" in comment) {
+            if (!comment.owned) {
+                deleteComment.parentNode.removeChild(deleteComment)
+                return
+            }
+        }
         deleteComment.addEventListener("click", e => {
             removeComment(lastComment);
         })

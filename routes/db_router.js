@@ -213,13 +213,21 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         console.log("remove", data)
         if (data.id) {
             const ObjectId = require('mongodb').ObjectID;
+            let id
+            try {
+                id = ObjectId(data.id)
+            }
+            catch (err) {
+                res.status(400).send({success:false, message:"Comment id is missing"})
+                return console.log(err)
+            }
             db.collection(req.params.name).updateOne(
                 { id: req.params.articleId },
-                { $pull: { "meta.comments": { id: ObjectId(data.id), userId: ObjectId(req.session.userId) } } },
+                { $pull: { "meta.comments": { id: id, userId: ObjectId(req.session.userId) } } },
                 (err, result) => {
                     if (err) {
                         res.status(404).send({success:false, message:"Failed to delete comment"})
-                        return console.log(err);
+                        return console.log(err)
                     }
                     res.send({success:true})
                 }
@@ -230,7 +238,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
     })
 
-    router.post('/:name/article/:articleId/status', function(req, res) {
+    router.post('/:name/article/:articleId/state', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({
                 success:false, 
@@ -248,23 +256,45 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
 
         const data = req.body
-        console.log("status", data)
+        console.log("state", data)
 
-        if (data.status) {
+        if (data.state) {
             db.collection(req.params.name).updateOne(
                 { id: req.params.articleId },
-                { $set: { "meta.status": data.status } },
+                { $set: { "meta.state": data.state } },
                 (err, result) => {
+                    console.log(result)
                     if (err) {
-                        res.status(404).send({success:false, message:"Failed to update status"})
+                        res.status(404).send({success:false, message:"Failed to update the state"})
                         return console.log(err);
                     }
-                    res.send({success:true, status:data.status})
+                    if (result.modifiedCount) {
+                        let text = `${req.session.name} changed the state of the document to ${data.state}`
+                        db.collection(req.params.name).updateOne(
+                            { id: req.params.articleId },
+                            { $push: { "meta.comments": {
+                                id: null,
+                                text: text, 
+                                userId: null, 
+                                userName: "System"
+                            } } },
+                            (err, result) => {
+                                if (err) {
+                                    res.send({success:true, state:data.state})
+                                    return console.log(err);
+                                }
+                                res.send({success:true, state:data.state, comment:{id:null, userName:"System", text:text, owned:false}})
+                            }
+                        )
+                    }
+                    else {
+                        res.send({success:true, state:data.state})
+                    }
                 }
             )
         }
         else {
-            res.status(400).send({success:false, message:"Status is missing"})
+            res.status(400).send({success:false, message:"State is missing"})
         }
     })
 

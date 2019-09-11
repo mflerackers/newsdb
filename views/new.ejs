@@ -1376,9 +1376,10 @@
     </div>
     <%- include("comments", { 
         comments: (data.meta && data.meta.comments) || [], 
+        state: (data.meta && data.meta.state) || "draft",
         addCommentUri:`/db/${name}/article/${data.id}/comments/add`, 
         removeCommentUri:`/db/${name}/article/${data.id}/comments/remove`, 
-        changeStatusUri:`/db/${name}/article/${data.id}/status`
+        changeStateUri:`/db/${name}/article/${data.id}/state`
     }) %>
     </div>
 </body>
