@@ -1342,6 +1342,19 @@
         //container.classList.add('loader');
         document.getElementById("save").disabled = true;
         const prefix = "<%- locals.name ? `/db/${name}` : "" %>";
+        let destination = `${prefix}/list`
+        let search = window.location.search;
+        if (search) {
+            let pairs = search.slice(1).split("&");
+            let params = {}
+            pairs.forEach(p=>{
+                let [k,v] = p.split("=");
+                params[k] = v;
+            })
+            if (params["referrer"]) {
+                destination = decodeURIComponent(params["referrer"]);
+            }
+        }
         fetch(`${prefix}/save`, {
             method: 'POST', // or 'PUT'
             body: JSON.stringify(data),
@@ -1354,7 +1367,7 @@
             document.getElementById("save").disabled = false
             console.log('Success:', JSON.stringify(response))
             isDirty = false
-            window.location = `${prefix}/list`
+            window.location = destination
         })
         .catch(error => {
             //container.classList.remove('loader')

@@ -276,7 +276,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                                 id: null,
                                 text: text, 
                                 userId: null, 
-                                userName: "System"
+                                userName: ""
                             } } },
                             (err, result) => {
                                 if (err) {
@@ -320,7 +320,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             stages.push({
                 "$addFields": {
                     "userId": { "$toObjectId": "$userId" },
-                    "created": { "$toDate": "$_id" }
+                    "created": { "$toDate": "$_id" },
+                    "state": "$meta.state"
                 }
             })
             // Do a join with the user table
@@ -343,10 +344,10 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 "user":{"name":1},
                 "modified":1,
                 "created":1,
-                "draft":1
+                "state":1
             }})
             // Sort by modified
-            const validSort = ["modified", "created", "id", "user", "draft"]
+            const validSort = ["modified", "created", "id", "user", "state"]
             if (validSort.includes(req.query.sort)) {
                 sort = req.query.sort ? req.query.sort : "modified"
                 order = req.query.order === "ascending" ? 1 : -1
@@ -473,7 +474,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     collection:collection,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
-                    authenticated: true
+                    authenticated: true,
+                    referrer: req.originalUrl
                 });
             }
         });
