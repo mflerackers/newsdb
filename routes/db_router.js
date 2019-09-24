@@ -283,7 +283,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                                     res.send({success:true, state:data.state})
                                     return console.log(err);
                                 }
-                                res.send({success:true, state:data.state, comment:{id:null, userName:"System", text:text, owned:false}})
+                                res.send({success:true, state:data.state, comment:{id:null, userName:"", text:text, owned:false}})
                             }
                         )
                     }

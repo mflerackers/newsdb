@@ -6,8 +6,8 @@
     <div class="comments">
         <select id="meta-state">
                 <option value="draft" <% if (state === "draft") { %>selected<% } %>>Draft</option>
-                <option value="review" <% if (state === "review") { %>selected<% } %>>In review</option>
-                <option value="incomplete" <% if (state === "incomplete") { %>selected<% } %>>Corrections needed</option>
+                <option value="in review" <% if (state === "in review") { %>selected<% } %>>In review</option>
+                <option value="corrections needed" <% if (state === "corrections needed") { %>selected<% } %>>Corrections needed</option>
                 <option value="finished" <% if (state === "finished") { %>selected<% } %>>Finished</option>
         </select>
         <div style="display: flex; flex-direction: column; align-items: flex-end;">
