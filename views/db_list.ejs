@@ -70,7 +70,7 @@
             <a href="/db/<%- collection.name %>/edit/<%= encodeURIComponent(articles[i].id) %><% if (locals.referrer) { %>?referrer=<%= encodeURIComponent(referrer) %><% } %>">
             <span><%= articles[i].id %></span>
             </a>
-            <%= articles[i].bibliography.headline %> <% if (articles[i].user) { %><span style="background-color: lightblue; padding: 2px; border-radius: 3px;"> <%= articles[i].user.name %></span><% } %> <% if (articles[i].state) { %><span style="background-color: orange; padding: 2px; border-radius: 3px;"> <%= articles[i].state %></span><% } %><br>
+            <%= articles[i].bibliography.headline %> <% if (articles[i].user) { %><span style="background-color: lightblue; padding: 2px; border-radius: 3px;"> <%= articles[i].user.name %></span><% } %> <% if (articles[i].state) { %><span class="<%= articles[i].state.replace(" ", "_") %>" style="padding: 2px; border-radius: 3px;"> <%= articles[i].state %></span><% } %><br>
             <span style="color:silver"><%= articles[i].article.abstract %></span>
         </li>
         <% } %>
