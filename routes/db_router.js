@@ -39,6 +39,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         let json = req.body
         // Update modified
         json.modified = new Date();
+        if (json.meta) {
+            json.meta.state = json.meta.state || "draft"
+        }
+        else {
+            json.meta = { state:"draft" }
+        }
 
         // Insert or update
         db.collection(req.params.name).updateOne(
