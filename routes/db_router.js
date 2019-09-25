@@ -102,6 +102,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     place:{
                         geo:"thailand,bangkok,,"
                     }
+                },
+                meta:{
+                    state:"draft"
                 }
             },
             collection: collection,
