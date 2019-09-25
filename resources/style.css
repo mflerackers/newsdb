@@ -130,3 +130,19 @@ select:invalid {
 select:focus:not(:valid) {
     box-shadow: 0 0 5px hsl(0, 70%, 58%);
 }
+
+span.draft {
+    background-color: #FF7800
+}
+
+span.in_review {
+    background-color: #00EE1D
+}
+
+span.corrections_needed {
+    background-color: #FF0D00
+}
+
+span.finished {
+    background-color: #02CEE1
+}
