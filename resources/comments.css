@@ -1,0 +1,41 @@
+div.comments {
+    width: 250px;
+    margin-top: 5px;
+}
+
+div.comments {
+    width: 250px;
+}
+
+div.comments select {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+div.comments textarea {
+    border: 1px solid darkgray;
+    border-radius: 5px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li.comment {
+    border: 1px solid darkgray;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+li.comment header {
+    font-weight: bold;
+    position: relative;
+}
+
+li.comment header button {
+    position: absolute;
+    right: 0px;
+}

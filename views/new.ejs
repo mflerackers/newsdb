@@ -6,9 +6,14 @@
     <link rel="stylesheet" type="text/css" href="/style.css">
     <style>
         .container {
-            width: 80%;
-            max-width: 1200px;
+            width: 90%; 
             margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+        }
+        .form-container {
+            width: 100%;
+            padding-right: 20px;
         }
         fieldset ul li {
             padding: 5px;
@@ -35,6 +40,7 @@
             border-radius: 4px;
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="/comments.css">
     <script src="/countries.js"></script>
     <script src="/thai_province_district.js"></script>
     <script src="/upload_field.js"></script>
@@ -246,6 +252,7 @@
         }
     </script>
     <div class="container">
+    <div class="form-container">
     <fieldset style="margin-top: 20px;"><legend>General</legend>
     <ul>
         <li><label for="id">Id</label> <input name="id" id="root.id" required/></li>
@@ -1335,6 +1342,19 @@
         //container.classList.add('loader');
         document.getElementById("save").disabled = true;
         const prefix = "<%- locals.name ? `/db/${name}` : "" %>";
+        let destination = `${prefix}/list`
+        let search = window.location.search;
+        if (search) {
+            let pairs = search.slice(1).split("&");
+            let params = {}
+            pairs.forEach(p=>{
+                let [k,v] = p.split("=");
+                params[k] = v;
+            })
+            if (params["referrer"]) {
+                destination = decodeURIComponent(params["referrer"]);
+            }
+        }
         fetch(`${prefix}/save`, {
             method: 'POST', // or 'PUT'
             body: JSON.stringify(data),
@@ -1347,7 +1367,7 @@
             document.getElementById("save").disabled = false
             console.log('Success:', JSON.stringify(response))
             isDirty = false
-            window.location = `${prefix}/list`
+            window.location = destination
         })
         .catch(error => {
             //container.classList.remove('loader')
@@ -1366,6 +1386,14 @@
         }
     });
     </script>
+    </div>
+    <%- include("comments", { 
+        comments: (data.meta && data.meta.comments) || [], 
+        state: (data.meta && data.meta.state) || "draft",
+        addCommentUri:`/db/${name}/article/${data.id}/comments/add`, 
+        removeCommentUri:`/db/${name}/article/${data.id}/comments/remove`, 
+        changeStateUri:`/db/${name}/article/${data.id}/state`
+    }) %>
     </div>
 </body>
 </html>

@@ -1,0 +1,139 @@
+<template id="comment-template">
+    <%- include("comment", {comment:{userid: "Me", text: "", owned: true}}) %>
+</template>
+<div>
+    <button id="hide-comments">Hide</button>
+    <div class="comments">
+        <select id="meta-state">
+                <option value="draft" <% if (state === "draft") { %>selected<% } %>>Draft</option>
+                <option value="in review" <% if (state === "in review") { %>selected<% } %>>In review</option>
+                <option value="corrections needed" <% if (state === "corrections needed") { %>selected<% } %>>Corrections needed</option>
+                <option value="finished" <% if (state === "finished") { %>selected<% } %>>Finished</option>
+        </select>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                <textarea id="comment-text" placeholder="new comment" rows=4 style="align-self: stretch;"></textarea>
+                <button id="post-comment">Post</button>
+            </div>
+        <ul id="comment-list">
+            <% comments.reverse().forEach(comment => { %>
+            <%- include("comment", {comment:comment}) %>
+            <% }) %>
+        </ul>
+    </div>
+</div>
+<script>
+    document.querySelector("#meta-state").addEventListener("change", e=>{
+        let metaState = document.querySelector("#meta-state")
+        metaState.disabled = true
+        post("<%- changeStateUri %>", { state: metaState.value }).then(json => {
+            console.log(json)
+            if (json.comment) {
+                addComment(json.comment)
+            }
+            metaState.value = json.state
+            metaState.disabled = false
+        }).catch(error => {
+            console.log(error)
+            metaState.disabled = false
+        })
+    })
+    document.querySelector("#hide-comments").addEventListener("click", e=>{
+        let container = document.querySelector("div.comments")
+        if (container.hidden) {
+            document.querySelector("#hide-comments").innerText = "Hide"
+            container.hidden = false
+        }
+        else {
+            document.querySelector("#hide-comments").innerText = "Show"
+            container.hidden = true
+        }
+    })
+    function addComment(comment) {
+        let template = document.querySelector("#comment-template");
+        let commentList = document.querySelector("#comment-list");
+        var clone = document.importNode(template.content, true);
+        clone.querySelector("#user").innerText = comment.userName
+        clone.querySelector("article").innerText = comment.text
+        commentList.insertBefore(clone, commentList.children[0]);
+        let comments = commentList.querySelectorAll("li")
+        let lastComment = comments[0]
+        let deleteComment = lastComment.querySelector("#delete-comment")
+        if ("owned" in comment) {
+            if (!comment.owned) {
+                deleteComment.parentNode.removeChild(deleteComment)
+                return
+            }
+        }
+        deleteComment.addEventListener("click", e => {
+            removeComment(lastComment);
+        })
+        deleteComment.setAttribute("commentId", comment.id)
+    }
+    function post(url, data) {
+        console.log("posting", JSON.stringify(data))
+        return fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            redirect: 'follow',
+            referrer: 'no-referrer',
+            body: JSON.stringify(data),
+        }).then(response => {
+            console.log(response)
+            if (response.ok) {
+                return response.json()
+            }
+            else {
+                console.log("not ok")
+                return Promise.reject({ status: response.status })
+            }
+        })
+    }
+    document.querySelector("#post-comment").addEventListener("click", e => {
+        let commentText = document.querySelector("#comment-text")
+
+        if (commentText.value) {
+            let postComment = document.querySelector("#post-comment")
+            commentText.disabled = true
+            postComment.disabled = true
+            post("<%- addCommentUri %>", { text: commentText.value }).then(json => {
+                console.log(json)
+                addComment(json)
+                commentText.value = ""
+                commentText.disabled = false
+                postComment.disabled = false
+            }).catch(error => {
+                console.log(error)
+                commentText.disabled = false
+                postComment.disabled = false
+            })
+        }
+    })
+    function removeComment(comment) {
+        let commentList = document.querySelector("#comment-list");
+        let deleteComment = comment.querySelector("#delete-comment")
+        deleteComment.disabled = true
+        post("<%- removeCommentUri %>", { id: deleteComment.getAttribute("commentId") }).then(json => {
+            console.log(json)
+            commentList.removeChild(comment);
+            deleteComment.disabled = false
+        }).catch(error => {
+            console.log(error)
+            deleteComment.disabled = false
+        })
+    }
+    let commentList = document.querySelector("#comment-list");
+    let comments = commentList.querySelectorAll("li")
+    comments.forEach(comment => {
+        let button = comment.querySelector("#delete-comment")
+        if (button) {
+            button.addEventListener("click", e => {
+                removeComment(comment);
+            })
+        }
+    })
+</script>

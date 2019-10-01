@@ -45,7 +45,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             {id:json.id}, 
             {
                 $set:json, 
-                $setOnInsert: { userId: req.session.userId }
+                $setOnInsert: { userId: req.session.userId, "meta.state": "draft" }
             }, 
             {upsert: true}, function(err, result) {
             if (err) {
@@ -102,6 +102,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     place:{
                         geo:"thailand,bangkok,,"
                     }
+                },
+                meta:{
+                    state:"draft"
                 }
             },
             collection: collection,
@@ -129,6 +132,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 res.status(404).send({success:false})
                 return console.log(err);
             }
+            if (result.meta && result.meta.comments) {
+                result.meta.comments.forEach(comment => {
+                    comment.owned = comment.userId == req.session.userId
+                    delete comment.userId
+                })
+            }
             res.render('new.ejs', {
                 name: req.params.name,
                 data: result,
@@ -136,10 +145,161 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 queryNames: queryNames,
                 fieldNames: fieldNames,
                 authenticated: true,
-                admin: req.session.admin
+                admin: req.session.admin,
+                userId : req.session.userId
             });
         });
     });
+
+    router.post('/:name/article/:articleId/comments/add', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        
+        const data = req.body
+        console.log("add", data)
+        if (data.text) {
+            const ObjectId = require('mongodb').ObjectID;
+            let id = new ObjectId()
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $push: { "meta.comments": {
+                    id: id,
+                    text: data.text, 
+                    userId: ObjectId(req.session.userId), 
+                    userName: req.session.name 
+                } } },
+                (err, result) => {
+                    if (err) {
+                        res.status(404).send({success:false})
+                        return console.log(err);
+                    }
+                    res.send({id:id.valueOf(), text:data.text, userName:req.session.name, owned:true})
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"Comment text is missing"})
+        }
+    })
+
+    router.post('/:name/article/:articleId/comments/remove', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+
+        const data = req.body
+        console.log("remove", data)
+        if (data.id) {
+            const ObjectId = require('mongodb').ObjectID;
+            let id
+            try {
+                id = ObjectId(data.id)
+            }
+            catch (err) {
+                res.status(400).send({success:false, message:"Comment id is missing"})
+                return console.log(err)
+            }
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $pull: { "meta.comments": { id: id, userId: ObjectId(req.session.userId) } } },
+                (err, result) => {
+                    if (err) {
+                        res.status(404).send({success:false, message:"Failed to delete comment"})
+                        return console.log(err)
+                    }
+                    res.send({success:true})
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"Comment id is missing"})
+        }
+    })
+
+    router.post('/:name/article/:articleId/state', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({
+                success:false, 
+                message: `This user doesn't have access to ${collection.friendlyName}`
+            })
+            return
+        }
+
+        const data = req.body
+        console.log("state", data)
+
+        if (data.state) {
+            db.collection(req.params.name).updateOne(
+                { id: req.params.articleId },
+                { $set: { "meta.state": data.state } },
+                (err, result) => {
+                    console.log(result)
+                    if (err) {
+                        res.status(404).send({success:false, message:"Failed to update the state"})
+                        return console.log(err);
+                    }
+                    if (result.modifiedCount) {
+                        let text = `${req.session.name} changed the state of the document to ${data.state}`
+                        db.collection(req.params.name).updateOne(
+                            { id: req.params.articleId },
+                            { $push: { "meta.comments": {
+                                id: null,
+                                text: text, 
+                                userId: null, 
+                                userName: ""
+                            } } },
+                            (err, result) => {
+                                if (err) {
+                                    res.send({success:true, state:data.state})
+                                    return console.log(err);
+                                }
+                                res.send({success:true, state:data.state, comment:{id:null, userName:"", text:text, owned:false}})
+                            }
+                        )
+                    }
+                    else {
+                        res.send({success:true, state:data.state})
+                    }
+                }
+            )
+        }
+        else {
+            res.status(400).send({success:false, message:"State is missing"})
+        }
+    })
 
     router.get('/:name/list', function(req, res) {
         if (!(req.params.name in definitions)) {
@@ -163,7 +323,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             stages.push({
                 "$addFields": {
                     "userId": { "$toObjectId": "$userId" },
-                    "created": { "$toDate": "$_id" }
+                    "created": { "$toDate": "$_id" },
+                    "state": "$meta.state"
                 }
             })
             // Do a join with the user table
@@ -186,10 +347,10 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 "user":{"name":1},
                 "modified":1,
                 "created":1,
-                "draft":1
+                "state":1
             }})
             // Sort by modified
-            const validSort = ["modified", "created", "id", "user", "draft"]
+            const validSort = ["modified", "created", "id", "user", "state"]
             if (validSort.includes(req.query.sort)) {
                 sort = req.query.sort ? req.query.sort : "modified"
                 order = req.query.order === "ascending" ? 1 : -1
@@ -316,7 +477,8 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     collection:collection,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
-                    authenticated: true
+                    authenticated: true,
+                    referrer: req.originalUrl
                 });
             }
         });
