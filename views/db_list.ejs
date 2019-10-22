@@ -50,14 +50,14 @@
             <% } else { %>
                 <a href="/db/<%- collection.name %>/list?sort=user" class="button"><span>Creator ⬍</span></a>
             <% } %>
-            <% if (locals.sort === "draft") { %>
+            <% if (locals.sort === "state") { %>
                 <% if (locals.order === 1) { %>
-                    <a href="/db/<%- collection.name %>/list?sort=draft" class="button selected"><span>Draft ⬇</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=state" class="button selected"><span>State ⬇</span></a>
                 <% } else { %>
-                    <a href="/db/<%- collection.name %>/list?sort=draft&order=ascending" class="button selected"><span>Draft ⬆</span></a>
+                    <a href="/db/<%- collection.name %>/list?sort=state&order=ascending" class="button selected"><span>State ⬆</span></a>
                 <% } %>
             <% } else { %>
-                <a href="/db/<%- collection.name %>/list?sort=draft" class="button"><span>Draft ⬍</span></a>
+                <a href="/db/<%- collection.name %>/list?sort=state" class="button"><span>State ⬍</span></a>
             <% } %>
         </li>
         <% for(var i=0; i<articles.length; i++) {%>

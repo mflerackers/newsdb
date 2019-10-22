@@ -262,13 +262,13 @@
                 <option>other articles</option>
             </select>
         </li>-->
-        <li><label for="draft">Draft</label> <input type="checkbox" name="draft" id="root.draft" /></li>
+        <!--<li><label for="draft">Draft</label> <input type="checkbox" name="draft" id="root.draft" /></li>-->
     </ul>
     </fieldset>
     <script>
         setEditValue("root.id", data.id);
         //setSelectValue("root.relevance", data.relevance);
-        document.getElementById("root.draft").checked = data.draft;
+        //document.getElementById("root.draft").checked = data.draft;
     </script>
     <fieldset style="margin-top: 20px;"><legend>Bibliography</legend>
     <ul>
@@ -1313,7 +1313,7 @@
         let data = {
             id: getEditValue("root.id"),
             //relevance: getEditValue("root.relevance"),
-            draft: document.getElementById("root.draft").checked,
+            //draft: document.getElementById("root.draft").checked,
             newCategory: getEditValue("root.newCategory"),
             bibliography: getBibliography(),
             categories: {
