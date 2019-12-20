@@ -39,9 +39,10 @@ var db
 async function connect() {
 
     let client = new MongoClient(`mongodb+srv://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.SERVER}?retryWrites=true`, {
+        useUnifiedTopology: true,
         useNewUrlParser: true,
-        reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 1000 
+        //reconnectTries: Number.MAX_VALUE,
+        //reconnectInterval: 1000 
     });
 
     await client.connect();
