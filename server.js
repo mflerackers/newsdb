@@ -38,7 +38,7 @@ var db
 
 async function connect() {
 
-    let client = new MongoClient(`mongodb+srv://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.SERVER}?retryWrites=true`, {
+    let client = new MongoClient(`mongodb+srv://${process.env.MONGOUSER}:${process.env.MONGOPASSWORD}@${process.env.SERVER}?retryWrites=true&w=majority`, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
         //reconnectTries: Number.MAX_VALUE,
@@ -49,7 +49,8 @@ async function connect() {
     db = client.db('thaidb');
 
     let store = new MongoStore({
-        db: db,
+        client: client,
+        dbName: 'thaidb',
         collection: 'sessions',
         ttl: 24 * 60 * 60
     });
