@@ -9,7 +9,7 @@
 <body>
     <%- include('header'); -%>
     <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
-    <div><%= articles.length %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button></div>
+    <div><%= articles.length %> results <button onclick="window.location=setUrlParam(setUrlParam(window.location, 'csv', 1), 'subset', document.getElementById('subset').value)">Export</button> <select id="subset"><option value="">All</option><option value="products">Products</option><option value="people">People</option><option value="happenings">Happenings</option></select></div>
     <ul class="articles">
         <li class="article" style="padding-bottom:25px">
             <a href="/db/<%- collection.name %>/new" class="button"><span>Create new</span></a>

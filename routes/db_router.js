@@ -363,6 +363,43 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             sort = "id"
             order = 1
             stages.push({"$sort":{"id":1}})
+            if (req.query.subset) {
+                let stageParams = {
+                    "products": {
+                        unwindPath: 'categories.products',
+                        projectPath: "product"
+                    },
+                    "people": {
+                        unwindPath: 'categories.people',
+                        projectPath: "person"
+                    },
+                    "happenings": {
+                        unwindPath: 'categories.happenings',
+                        projectPath: "happening"
+                    }
+                }
+                let params = stageParams[req.query.subset]
+                stages.push({
+                    '$project': {
+                        'id': 1,
+                        [params.unwindPath]: 1
+                    }
+                })
+                stages.push({
+                    '$unwind': {
+                      'path': `$${params.unwindPath}`,
+                      'preserveNullAndEmptyArrays': false
+                    }
+                  }
+                )
+                stages.push({
+                    '$project': {
+                      'id': 1,
+                      [params.projectPath]: `$${params.unwindPath}`
+                    }
+                })
+            }
+            console.log(req.query)
         }
         console.log(JSON.stringify(stages))
         db.collection(req.params.name).aggregate(stages).toArray((err, result) => {
@@ -371,7 +408,59 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 return console.log(err);
             }
             if (req.query.csv) {
-                exportCsv(definitions[req.params.name].templates.csv.default, result, res);
+                if (req.query.subset) {
+                    let templates = {
+                        "products": {
+                            Id: "id",
+                            Product_Kind: "product.kind",
+                            Product_Target: "product.target",
+                            Product_SubTarget: "product.subtarget",
+                            Product_SubSubTarget: "product.subsubtarget",
+                            Product_Function: "product.function",
+                            Product_Form: "product.form",
+                            Product_Specific: "product['product-specific']",
+                            Product_Target_gender: "product['target-gender']",
+                            Product_Target_age: "product['target-age']"
+                        },
+                        "people": {
+                            Person_Name: "person.name",
+                            Person_CentralOrSuburb: "person.density",
+                            Person_GeoNameCity: "person.place",
+                            Person_GeoNamePlaceSpecific: "person['place-specific']",
+                            Person_WorkType: "person['work-type']",
+                            Person_EducationLevel: "person['education-level']",
+                            Person_FieldOfExpertise: "person.field",
+                            Person_WorkSpecific: "person['work-specific']",
+                            Person_Company: "person.company",
+                            Person_Gender: "person.gender",
+                            Person_Age: "person.age",
+                            Person_AgeSpecific: "person['age-specific']",
+                            Person_Role: "person.role",
+                            Person_Action:"person.action"
+                        },
+                        "happenings": {
+                            Happening_ShortAbstract: "happening.name",
+                            Happening_ExternalFactor: "happening['external-factor']",
+                            Happening_GeoNameCity: "happening.place",
+                            Happening_GeoNamePlaceSpecific: "happening['place-specific']",
+                            Happening_Season: "happening.time.season",
+                            Happening_Year: "happening.time.year",
+                            Happening_Month: "happening.time.month",
+                            Happening_Day: "happening.time.day",
+                            Happening_Period: "happening.time.period"
+                        }
+                    };
+                    let template = templates[req.query.subset]
+                    if (template) {
+                        exportCsv(template, result, res);
+                    }
+                    else {
+                        res.status(404).send("Unknown subset")
+                    }
+                }
+                else {
+                    exportCsv(definitions[req.params.name].templates.csv.default, result, res);
+                }
             }
             else {
                 res.render('db_list.ejs', {

@@ -4,5 +4,5 @@ function setUrlParam(url, param, value) {
     searchParams.set(param, value);
     let newUrl = new URL(url);
     newUrl.search = searchParams.toString();
-    return newUrl.toString();
+    return newUrl;
 }
