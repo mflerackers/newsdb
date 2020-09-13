@@ -376,6 +376,10 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     "happenings": {
                         unwindPath: 'categories.happenings',
                         projectPath: "happening"
+                    },
+                    "keywords": {
+                        unwindPath: 'article.keywords',
+                        projectPath: "keyword"
                     }
                 }
                 let params = stageParams[req.query.subset]
@@ -392,12 +396,29 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     }
                   }
                 )
-                stages.push({
-                    '$project': {
-                      'id': 1,
-                      [params.projectPath]: `$${params.unwindPath}`
-                    }
-                })
+                if (req.query.subset === "keywords") {
+                    stages.push({
+                        '$project': {
+                          'id': 1,
+                          [params.projectPath]: {$split:[`$${params.unwindPath}`,","]}
+                        }
+                    })
+                    stages.push({
+                        '$unwind': {
+                          'path': `$${params.projectPath}`,
+                          'preserveNullAndEmptyArrays': false
+                        }
+                      }
+                    )
+                }
+                else {
+                    stages.push({
+                        '$project': {
+                          'id': 1,
+                          [params.projectPath]: `$${params.unwindPath}`
+                        }
+                    })
+                }
             }
             console.log(req.query)
         }
@@ -423,6 +444,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                             Product_Target_age: "product['target-age']"
                         },
                         "people": {
+                            Id: "id",
                             Person_Name: "person.name",
                             Person_CentralOrSuburb: "person.density",
                             Person_GeoNameCity: "person.place",
@@ -439,6 +461,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                             Person_Action:"person.action"
                         },
                         "happenings": {
+                            Id: "id",
                             Happening_ShortAbstract: "happening.name",
                             Happening_ExternalFactor: "happening['external-factor']",
                             Happening_GeoNameCity: "happening.place",
@@ -448,6 +471,10 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                             Happening_Month: "happening.time.month",
                             Happening_Day: "happening.time.day",
                             Happening_Period: "happening.time.period"
+                        },
+                        "keywords": {
+                            Id: "id",
+                            Keyword: "keyword",
                         }
                     };
                     let template = templates[req.query.subset]
