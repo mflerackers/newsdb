@@ -12,7 +12,7 @@ function expressionFromFormula(formula) {
     return expression;
 }
 
-module.exports = function exportCsv(template, data, res) {
+module.exports = function exportCsv(template, data, res, _env) {
     let csvRows = [];
 
     const stringifier = stringify({
@@ -34,6 +34,7 @@ module.exports = function exportCsv(template, data, res) {
 
     stringifier.write(Object.keys(template));
     data.forEach(env=>{
+        env = {...env, ..._env}
         stringifier.write(Object.values(template).map(formula=>{
             let expression = expressionFromFormula(formula);
             return calcExpression(env, expression) || "NA";
