@@ -9,14 +9,22 @@
 <body>
     <%- include('header'); -%>
     <h1><a href="/db">Collections</a>.<a href="/db/<%- collection.name %>/list"><%- collection.friendlyName %></a><%- locals.query ? "." + locals.query : "" %></h1>
-    <div><%= articles.length %> groups <%= articles.reduce((a,v)=>a+v.count, 0) %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> | <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> |</div>
+    <div><%= articles.length %> groups <%= articles.reduce((a,v)=>a+v.count, 0) %> results <button onclick="window.location=setUrlParam(window.location, 'csv', 1)">Export</button> <% if (!locals.valueFirst) { %>| <span title="Cramer's V">V</span>: <%- statistics.v.toFixed(4); %> | <span title="Uncertainty of X when Y is known">U(X|Y)</span>: <%- statistics.uxy.toFixed(4); %> | <span title="Uncertainty of Y when X is known">U(Y|X)</span>: <%- statistics.uyx.toFixed(4); %> | <% } %></div>
     <div style="display: flex;">
         <div style="flex: 50%;">
             <table>
-                <tr><th><%= first %></th><th><%= second %></th><th>count</th></tr>
+                <tr>
+                    <% if (!locals.valueFirst) { %>
+                        <th><%= first %></th>
+                    <% } %>
+                    <th><%= second %></th>
+                    <th>count</th>
+                </tr>
                 <% for(var i=0; i<articles.length; i++) {%>
                 <tr>
-                    <td><%= articles[i].first %></td>
+                    <% if (!locals.valueFirst) { %>
+                        <td><a href=<%- `"/db/${dbName}/group/${first}/${second}/${encodeURIComponent(articles[i].first)}"` %>"><%= articles[i].first %></a></td>
+                    <% } %>
                     <td><%= articles[i].second %></td>
                     <td><a href=<%- `"/db/${dbName}/group/${first}/${second}/${encodeURIComponent(articles[i].first)}/${encodeURIComponent(articles[i].second)}"` %>"><%= articles[i].count %></a></td>
                 </tr>
@@ -25,9 +33,9 @@
         </div>
         <div style="flex: 50%;">
             <% if (count) { %>
-                <div><a href=<%- `"/db/${dbName}/group/${first}/${second}"` %>>Hide chart</a></div>
+                <div><a href=<%- `"/db/${dbName}/group/${first}/${second}/${locals.valueFirst ? locals.valueFirst : ""}"` %>>Hide chart</a></div>
             <% } else { %>
-                <div><a href=<%-`"/db/${dbName}/group/${first}/${second}?chart=true"` %>>Show chart</a></div>
+                <div><a href=<%-`"/db/${dbName}/group/${first}/${second}/${locals.valueFirst ? locals.valueFirst : ""}?chart=true"` %>>Show chart</a></div>
             <% } %>
             <div style="display: inline-block; float:left">
                 <canvas id="resultChart" width="800" height="400"></canvas>
@@ -37,10 +45,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <% if (count) { %>
     <script>
-        const labels = [<%- labels.map(label => "'" + label + "'").join(",") %>];
-        const categories = [<%- categories.map(category => "\"" + category + "\"").join(",") %>];
-        let datasets = [<%= datasets.map(dataset => "[" + dataset.join(",") + "]") %>];
-
         const backgroundColors = [
             "rgba(255, 99, 132, 0.2)",
             "rgba(255, 159, 64, 0.2)",
@@ -57,50 +61,86 @@
             "rgb(54, 162, 235)",
             "rgb(153, 102, 255)",
             "rgb(201, 203, 207)"];
-        
-        datasets = datasets.map((data, i) => ({
-            label:categories[i],
-            data:data, 
-            backgroundColor: backgroundColors[i],
-            borderColor: borderColors[i],
-            borderWidth:1
-        }));
 
-        var resultChart = new Chart("resultChart", {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
-            options: {
-                title: {
-                    display: true,
-                    text: "<%= first %> and <%= second %>"
-                },
-                scales: {
-                    xAxes: [{
-                        stacked: true,
-                        scaleLabel: {
-                            display: true,
-                            labelString: "<%= second %>"
-                        },
-                        ticks: {
-                            autoSkip: false
-                        }
+        const valueFirst = "<%- locals.valueFirst ? valueFirst : "" %>";
+
+        if (valueFirst) {
+            const labels = [<%- categories.map(category => "\"" + category + "\"").join(",") %>];
+            let datasets = [<%= datasets %>];
+            let borderWidths = [<%= datasets.map(dataset => 1) %>];
+
+            var resultChart = new Chart("resultChart", {
+                type: 'pie',
+                data: {
+                    datasets: [{
+                        data: datasets,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: borderWidths
                     }],
-                    yAxes: [{
-                        stacked: true,
-                        scaleLabel: {
-                            display: true,
-                            labelString: "<%= first %>"
-                        },
-                        ticks: {
-                            beginAtZero:true
-                        }
-                    }]
+                    labels: labels,
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: "<%= first %> and <%= second %>"
+                    },
+                    legend: {
+                        display: true,
+                        position: "left"
+                    }
                 }
-            }
-        });
+            });
+        }
+        else {
+            const labels = [<%- labels.map(label => "'" + label + "'").join(",") %>];
+            const categories = [<%- categories.map(category => "\"" + category + "\"").join(",") %>];
+            let datasets = [<%= datasets.map(dataset => "[" + dataset.join(",") + "]") %>];
+            
+            datasets = datasets.map((data, i) => ({
+                label:categories[i],
+                data:data, 
+                backgroundColor: backgroundColors[i],
+                borderColor: borderColors[i],
+                borderWidth:1
+            }));
+
+            var resultChart = new Chart("resultChart", {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: "<%= first %> and <%= second %>"
+                    },
+                    scales: {
+                        xAxes: [{
+                            stacked: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: "<%= second %>"
+                            },
+                            ticks: {
+                                autoSkip: false
+                            }
+                        }],
+                        yAxes: [{
+                            stacked: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: "<%= first %>"
+                            },
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
     </script>
     <% } %>
 </body>

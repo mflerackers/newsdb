@@ -906,6 +906,109 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     })
 
+    router.get('/:name/group/:first/:second/:valueFirst', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        let firstGroup = req.params.first;
+        let secondGroup = req.params.second;
+        let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.happening"))) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.topics"))) {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("article.keywords"))) {
+            aggregate.push({$unwind:"$article.keywords"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.people"))) {
+            aggregate.push({$unwind:"$categories.people"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.products"))) {
+            aggregate.push({$unwind:"$categories.products"});
+        }
+        firstGroup = "$" + firstGroup;
+        secondGroup = "$" + secondGroup;
+        aggregate.push({$match:{[req.params.first]: req.params.valueFirst}});
+        aggregate.push({$sortByCount:{$mergeObjects:{first:firstGroup,second:secondGroup}}});
+        console.log(firstGroup, secondGroup, req.params.valueFirst, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
+            if (err) return console.log(err)
+            result = result.filter(article => article._id.first && article._id.first != "" && article._id.second && article._id.second != "");
+
+            if (req.query.csv) {
+                let articles = result.map(article => `"${article._id.first}", "${article._id.second}", "${article.count}"`);
+                res.attachment(`${req.params.first}-${req.params.second}.csv`);
+                res.status(200).send(articles.join("\n"));
+            }
+            else {
+                let articles = result.map(article => ({first:article._id.first, second:article._id.second, count:article.count}));
+                let count = req.query.chart ? result.map(article => article.count) : false;
+                let labels = [];
+                let categories = [];
+                console.log(result.slice(0, 10))
+                result.some(r => {
+                    label = r._id.first;
+                    if (labels.findIndex(l => l == label) == -1)
+                        labels.push(label);
+                    return labels.length >= 10;
+                });
+                result.some(r => {
+                    category = r._id.second;
+                    if (categories.findIndex(c => c == category) == -1)
+                        categories.push(category);
+                    return categories.length >= 7;
+                });
+                let datasets = categories.map(_ => [...labels.map(_ => 0)]);
+                let first, second, labelIndex, categoryIndex;
+                result.forEach(r => {
+                    first = r._id.first;
+                    second = r._id.second;
+                    labelIndex = labels.findIndex(l => l == first);
+                    categoryIndex = categories.findIndex(c => c == second);
+                    if (labelIndex > -1 && categoryIndex > -1) {
+                        datasets[categoryIndex][labelIndex] = r.count;
+                    }
+                });
+                if (req.query.percentage) {
+                    labels.forEach((_, l) => {
+                        let sum = categories.reduce((a, _, c) => a + datasets[c][l], 0);
+                        categories.forEach((_, c) => datasets[c][l] /= sum);
+                    });
+                }
+                console.log(articles, labels, categories, datasets);
+
+                res.render('group.ejs', {
+                    collection:collection,
+                    articles:articles, 
+                    count:count,
+                    dbName:req.params.name,
+                    title:`${req.params.name}.group(${req.params.first}:${req.params.valueFirst}, ${req.params.second})`,
+                    query:`group(${req.params.first}:${req.params.valueFirst}, ${req.params.second})`,
+                    first:req.params.first, 
+                    second:req.params.second, 
+                    labels:labels, 
+                    categories:categories, 
+                    datasets:datasets,
+                    queryNames:queryNames,
+                    fieldNames:fieldNames,
+                    authenticated: true,
+                    statistics: {v:0,uxy:0,uyx:0},
+                    valueFirst:req.params.valueFirst
+                });
+            }
+        });
+    })
+
     router.get('/:name/group/:first/:second/:valueFirst/:valueSecond', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
