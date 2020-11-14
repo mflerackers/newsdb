@@ -363,6 +363,64 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
             sort = "id"
             order = 1
             stages.push({"$sort":{"id":1}})
+            if (req.query.subset) {
+                let stageParams = {
+                    "products": {
+                        unwindPath: 'categories.products',
+                        projectPath: "product"
+                    },
+                    "people": {
+                        unwindPath: 'categories.people',
+                        projectPath: "person"
+                    },
+                    "happenings": {
+                        unwindPath: 'categories.happenings',
+                        projectPath: "happening"
+                    },
+                    "keywords": {
+                        unwindPath: 'article.keywords',
+                        projectPath: "keyword"
+                    }
+                }
+                let params = stageParams[req.query.subset]
+                stages.push({
+                    '$project': {
+                        'id': 1,
+                        [params.unwindPath]: 1
+                    }
+                })
+                stages.push({
+                    '$unwind': {
+                      'path': `$${params.unwindPath}`,
+                      'preserveNullAndEmptyArrays': false
+                    }
+                  }
+                )
+                if (req.query.subset === "keywords") {
+                    stages.push({
+                        '$project': {
+                          'id': 1,
+                          [params.projectPath]: {$split:[`$${params.unwindPath}`,","]}
+                        }
+                    })
+                    stages.push({
+                        '$unwind': {
+                          'path': `$${params.projectPath}`,
+                          'preserveNullAndEmptyArrays': false
+                        }
+                      }
+                    )
+                }
+                else {
+                    stages.push({
+                        '$project': {
+                          'id': 1,
+                          [params.projectPath]: `$${params.unwindPath}`
+                        }
+                    })
+                }
+            }
+            console.log(req.query)
         }
         console.log(JSON.stringify(stages))
         db.collection(req.params.name).aggregate(stages).toArray((err, result) => {
@@ -371,7 +429,92 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                 return console.log(err);
             }
             if (req.query.csv) {
-                exportCsv(definitions[req.params.name].templates.csv.default, result, res);
+                if (req.query.subset) {
+                    let templates = {
+                        "products": {
+                            Id: "id",
+                            Product_Kind: "translateProductKind(product.kind)",
+                            Product_Target: "product.target",
+                            Product_SubTarget: "product.subtarget",
+                            Product_SubSubTarget: "product.subsubtarget",
+                            Product_Function: "product.function",
+                            Product_Form: "product.form",
+                            Product_Specific: "product['product-specific']",
+                            Product_Target_gender: "translateGender(product['target-gender'])",
+                            Product_Target_age: "translateAge(product['target-age'])",
+                        },
+                        "people": {
+                            Id: "id",
+                            Person_Name: "person.name",
+                            Person_CentralOrSuburb: "person.density",
+                            Person_GeoNameCity: "person.place",
+                            Person_GeoNamePlaceSpecific: "person['place-specific']",
+                            Person_WorkType: "person['work-type']",
+                            Person_EducationLevel: "person['education-level']",
+                            Person_FieldOfExpertise: "person.field",
+                            Person_WorkSpecific: "person['work-specific']",
+                            Person_Company: "person.company",
+                            Person_Gender: "translateGender(person.gender)",
+                            Person_Age: "translateAge(person.age)",
+                            Person_AgeSpecific: "person['age-specific']",
+                            Person_Role: "person.role",
+                            Person_Action:"person.action"
+                        },
+                        "happenings": {
+                            Id: "id",
+                            Happening_ShortAbstract: "happening.name",
+                            Happening_ExternalFactor: "happening['external-factor']",
+                            Happening_GeoNameCity: "happening.place",
+                            Happening_GeoNamePlaceSpecific: "happening['place-specific']",
+                            Happening_Season: "happening.time.season",
+                            Happening_Year: "happening.time.year",
+                            Happening_Month: "happening.time.month",
+                            Happening_Day: "happening.time.day",
+                            Happening_Period: "happening.time.period"
+                        },
+                        "keywords": {
+                            Id: "id",
+                            Keyword: "keyword",
+                        }
+                    };
+                    let template = templates[req.query.subset]
+                    if (template) {
+                        env = {
+                            translateGender: function(gender) {
+                                let mapping = {
+                                    "Undecided":"Transgender"
+                                };
+                                return mapping[gender] || gender;
+                            },
+                            translateAge: function(age) {
+                                let mapping = {
+                                    "Infant":"Infant (0-2)",
+                                    "Pre-school":"Pre-school (3-5)",
+                                    "School age/teenager":"School age (6-14)",
+                                    "Young adult":"College/young adult (15-24)",
+                                    "Adult":"Adult (25-50)",
+                                    "Older adult":"Pre-elderly (51-60)",
+                                    "Elderly":"Elderly (60~)"
+                                };
+                                return mapping[age] || age;
+                            },
+                            translateProductKind: function(age) {
+                                let mapping = {
+                                    "personal hygiene product":"personal hygiene/beauty product",
+                                    "hygiene and house cleaning":"house cleaning detergent",
+                                };
+                                return mapping[age] || age;
+                            }
+                        }
+                        exportCsv(template, result, res, env);
+                    }
+                    else {
+                        res.status(404).send("Unknown subset")
+                    }
+                }
+                else {
+                    exportCsv(definitions[req.params.name].templates.csv.default, result, res);
+                }
             }
             else {
                 res.render('db_list.ejs', {
@@ -416,6 +559,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         if (group.startsWith("categories.people")) {
             aggregate.push({$unwind:"$categories.people"});
         }
+        if (group.startsWith("categories.products")) {
+            aggregate.push({$unwind:"$categories.products"});
+        }
         group = "$" + group;
         aggregate.push({ $group : { _id : group } });
         console.log(group, aggregate);
@@ -451,15 +597,6 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         let name = req.params.param;
         let aggregate = [];
         aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
-        /*if (name.startsWith("categories.happening")) {
-            aggregate.push({$unwind:"$categories.happening"});
-        }
-        if (name == "categories.topics") {
-            aggregate.push({$unwind:"$categories.topics"});
-        }
-        if (name == "article.keywords") {
-            aggregate.push({$unwind:"$article.keywords"});
-        }*/
         aggregate.push({$match:{[name]: req.params.value}});
         console.log(name, req.params.value, aggregate);
         db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
@@ -557,6 +694,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         if (group.startsWith("categories.people")) {
             aggregate.push({$unwind:"$categories.people"});
         }
+        if (group.startsWith("categories.products")) {
+            aggregate.push({$unwind:"$categories.products"});
+        }
         group = "$" + group;
         aggregate.push({$sortByCount:group});
         console.log(group, JSON.stringify(aggregate));
@@ -586,6 +726,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     statistics:statistics,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
+                    first:req.params.param,
                     authenticated: true
                 });
             }
@@ -606,15 +747,6 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         let name = req.params.param;
         let aggregate = [];
         aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
-        /*if (name.startsWith("categories.happening")) {
-            aggregate.push({$unwind:"$categories.happening"});
-        }
-        /*if (name == "categories.topics") {
-            aggregate.push({$unwind:"$categories.topics"});
-        }
-        if (name == "article.keywords") {
-            aggregate.push({$unwind:"$article.keywords"});
-        }*/
         aggregate.push({$match:{[name]: req.params.value}});
         console.log(name, req.params.value, aggregate);
         db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
@@ -664,6 +796,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         if ([firstGroup, secondGroup].some(name => name.startsWith("categories.people"))) {
             aggregate.push({$unwind:"$categories.people"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.products"))) {
+            aggregate.push({$unwind:"$categories.products"});
         }
         firstGroup = "$" + firstGroup;
         secondGroup = "$" + secondGroup;
@@ -772,6 +907,109 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         });
     })
 
+    router.get('/:name/group/:first/:second/:valueFirst', function(req, res) {
+        if (!(req.params.name in definitions)) {
+            res.status(403).send({success:false})
+            return
+        }
+        let collection = definitions[req.params.name]
+        if (!collection.users.includes(req.session.userId)) {
+            res.status(403).send({success:false})
+            return
+        }
+
+        let firstGroup = req.params.first;
+        let secondGroup = req.params.second;
+        let aggregate = [];
+        aggregate.push({$addFields: { "categories.happening": { $ifNull: [ "$categories.happening", "$categories.happenings" ] }}});
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.happening"))) {
+            aggregate.push({$unwind:"$categories.happening"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.topics"))) {
+            aggregate.push({$unwind:"$categories.topics"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("article.keywords"))) {
+            aggregate.push({$unwind:"$article.keywords"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.people"))) {
+            aggregate.push({$unwind:"$categories.people"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.products"))) {
+            aggregate.push({$unwind:"$categories.products"});
+        }
+        firstGroup = "$" + firstGroup;
+        secondGroup = "$" + secondGroup;
+        aggregate.push({$match:{[req.params.first]: req.params.valueFirst}});
+        aggregate.push({$sortByCount:{$mergeObjects:{first:firstGroup,second:secondGroup}}});
+        console.log(firstGroup, secondGroup, req.params.valueFirst, aggregate);
+        db.collection(req.params.name).aggregate(aggregate).toArray((err, result) => {
+            if (err) return console.log(err)
+            result = result.filter(article => article._id.first && article._id.first != "" && article._id.second && article._id.second != "");
+
+            if (req.query.csv) {
+                let articles = result.map(article => `"${article._id.first}", "${article._id.second}", "${article.count}"`);
+                res.attachment(`${req.params.first}-${req.params.second}.csv`);
+                res.status(200).send(articles.join("\n"));
+            }
+            else {
+                let articles = result.map(article => ({first:article._id.first, second:article._id.second, count:article.count}));
+                let count = req.query.chart ? result.map(article => article.count) : false;
+                let labels = [];
+                let categories = [];
+                console.log(result.slice(0, 10))
+                result.some(r => {
+                    label = r._id.first;
+                    if (labels.findIndex(l => l == label) == -1)
+                        labels.push(label);
+                    return labels.length >= 10;
+                });
+                result.some(r => {
+                    category = r._id.second;
+                    if (categories.findIndex(c => c == category) == -1)
+                        categories.push(category);
+                    return categories.length >= 7;
+                });
+                let datasets = categories.map(_ => [...labels.map(_ => 0)]);
+                let first, second, labelIndex, categoryIndex;
+                result.forEach(r => {
+                    first = r._id.first;
+                    second = r._id.second;
+                    labelIndex = labels.findIndex(l => l == first);
+                    categoryIndex = categories.findIndex(c => c == second);
+                    if (labelIndex > -1 && categoryIndex > -1) {
+                        datasets[categoryIndex][labelIndex] = r.count;
+                    }
+                });
+                if (req.query.percentage) {
+                    labels.forEach((_, l) => {
+                        let sum = categories.reduce((a, _, c) => a + datasets[c][l], 0);
+                        categories.forEach((_, c) => datasets[c][l] /= sum);
+                    });
+                }
+                console.log(articles, labels, categories, datasets);
+
+                res.render('group.ejs', {
+                    collection:collection,
+                    articles:articles, 
+                    count:count,
+                    dbName:req.params.name,
+                    title:`${req.params.name}.group(${req.params.first}:${req.params.valueFirst}, ${req.params.second})`,
+                    query:`group(${req.params.first}:${req.params.valueFirst}, ${req.params.second})`,
+                    first:req.params.first, 
+                    second:req.params.second, 
+                    labels:labels, 
+                    categories:categories, 
+                    datasets:datasets,
+                    queryNames:queryNames,
+                    fieldNames:fieldNames,
+                    authenticated: true,
+                    statistics: {v:0,uxy:0,uyx:0},
+                    valueFirst:req.params.valueFirst
+                });
+            }
+        });
+    })
+
     router.get('/:name/group/:first/:second/:valueFirst/:valueSecond', function(req, res) {
         if (!(req.params.name in definitions)) {
             res.status(403).send({success:false})
@@ -801,6 +1039,9 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         if ([firstGroup, secondGroup].some(name => name.startsWith("categories.people"))) {
             aggregate.push({$unwind:"$categories.people"});
+        }
+        if ([firstGroup, secondGroup].some(name => name.startsWith("categories.products"))) {
+            aggregate.push({$unwind:"$categories.products"});
         }
         firstGroup = "$" + firstGroup;
         secondGroup = "$" + secondGroup;
@@ -842,6 +1083,12 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
         }
         if ([group].some(name => name.startsWith("article.keywords"))) {
             aggregate.push({$unwind:"$article.keywords"});
+        }
+        if ([group].some(name => name.startsWith("article.people"))) {
+            aggregate.push({$unwind:"$article.people"});
+        }
+        if ([group].some(name => name.startsWith("article.products"))) {
+            aggregate.push({$unwind:"$article.products"});
         }
         aggregate.push({$match:{[group]:req.params.value}});
         aggregate.push({$sortByCount:"$categories.place.geo"});

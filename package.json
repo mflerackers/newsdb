@@ -12,23 +12,23 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "bcrypt": "3.0.6",
+    "bcrypt": "4.0.1",
     "body-parser": "1.19.0",
-    "connect-mongo": "2.0.3",
-    "csv": "5.3.1",
-    "csv-parse": "4.8.2",
+    "connect-mongo": "3.2.0",
+    "csv": "5.3.2",
+    "csv-parse": "4.8.8",
     "dotenv": "8.2.0",
-    "ejs": "2.7.1",
+    "ejs": "3.0.2",
     "express": "4.17.1",
     "express-session": "1.17.0",
-    "formidable": "1.2.1",
+    "formidable": "1.2.2",
     "googleapis": "39.2.0",
     "jsep": "0.3.4",
     "json": "9.0.6",
-    "mongodb": "3.4.1",
+    "mongodb": "3.5.5",
     "nodemailer": "6.1.1",
     "nodemon": "^1.19.4",
-    "npm": "^6.13.4"
+    "npm": "^6.14.8"
   },
   "author": "",
   "license": "ISC"
