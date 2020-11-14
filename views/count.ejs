@@ -68,17 +68,25 @@
             options: {
                 title: {
                     display: true,
-                    text: "External Factors"
+                    text: "<%= first %> and count"
                 },
                 scales: {
                     xAxes: [{
                         stacked: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: "<%= first %>"
+                        },
                         ticks: {
                             autoSkip: false
                         }
                     }],
                     yAxes: [{
                         stacked: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: "count"
+                        },
                         ticks: {
                             beginAtZero:true
                         }

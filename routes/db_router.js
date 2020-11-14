@@ -726,6 +726,7 @@ function getRouter(db, definitions, queryNames, fieldNames, process) {
                     statistics:statistics,
                     queryNames:queryNames,
                     fieldNames:fieldNames,
+                    first:req.params.param,
                     authenticated: true
                 });
             }
