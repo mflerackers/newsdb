@@ -29,6 +29,17 @@
             margin: 0 0 5px;
             color: #777;
         }
+        .legend {
+            line-height: 18px;
+            color: #555;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +147,23 @@
         style: style,
         onEachFeature: onEachFeature
     }).addTo(map);
+
+    // Legend
+    var legend = L.control({position: 'bottomleft'});  
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 1, 2, 5, 10, 20, 30, 40],
+            labels = ['<strong><%- attribute %><br>is <%- value %></strong>'],
+            grade;
+
+        for (var i = 0; i < grades.length; i++) {
+            grade = grades[i];
+            labels.push('<i style="background:' + getColor(grade + 1) + '"></i> &gt; ' + grade);
+        }
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    legend.addTo(map);
     </script>
 </body>
 </html>
