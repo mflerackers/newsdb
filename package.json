@@ -12,7 +12,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "bcrypt": "5.0.0",
+    "bcrypt": "5.1.1",
     "body-parser": "1.20.1",
     "connect-mongo": "3.2.0",
     "csv": "5.3.2",
@@ -28,7 +28,7 @@
     "mongodb": "3.5.5",
     "nodemailer": "6.9.9",
     "nodemon": "^2.0.22",
-    "npm": "^9.6.5"
+    "npm": "^10.8.1"
   },
   "author": "",
   "license": "ISC"
