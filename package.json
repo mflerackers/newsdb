@@ -27,8 +27,8 @@
     "json": "10.0.0",
     "mongodb": "3.5.5",
     "nodemailer": "6.9.9",
-    "nodemon": "^2.0.22",
-    "npm": "^10.8.1"
+    "nodemon": "2.0.22",
+    "npm": "10.8.1"
   },
   "author": "",
   "license": "ISC"
